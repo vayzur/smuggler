@@ -1,0 +1,20 @@
+---
+- name: Copy dnstt-client
+  copy:
+    src: dnstt-client
+    dest: /usr/local/bin/dnstt-client
+    mode: 0755
+
+- name: Copy server public key to client
+  copy:
+    src: "/tmp/{{ dnstt_pubkey }}"
+    dest: "{{ dnstt_pubkey_path }}"
+    mode: 0644
+
+- name: Make smuggler systemd service
+  template:
+    src: smuggler.service.j2
+    dest: /etc/systemd/system/smuggler.service
+  changed_when: true
+  notify:
+    - Restart smuggler
