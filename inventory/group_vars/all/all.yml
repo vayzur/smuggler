@@ -1,0 +1,8 @@
+---
+dnstt_domain: ns.example.com
+
+dnstt_privkey: smuggler.key
+dnstt_pubkey: smuggler.pub
+
+dnstt_privkey_path: "/opt/{{ dnstt_privkey }}"
+dnstt_pubkey_path: "/opt/{{ dnstt_pubkey }}"
