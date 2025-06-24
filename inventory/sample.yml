@@ -1,0 +1,10 @@
+all:
+  vars:
+    ansible_port: 3022
+    ansible_user: root
+
+  hosts:
+    dnstt_server:
+      ansible_host: server.domain.tld
+    dnstt_client:
+      ansible_host: client.domain.tld
