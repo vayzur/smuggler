@@ -1,0 +1,8 @@
+---
+- name: Enable dnstt-ratelimit
+  systemd:
+    name: dnstt-ratelimit
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  ignore_errors: true

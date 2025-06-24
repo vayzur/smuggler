@@ -1,0 +1,10 @@
+[Unit]
+Description=Configure DNSTT ratelimit
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/dnstt-ratelimit.sh
+
+[Install]
+WantedBy=multi-user.target
