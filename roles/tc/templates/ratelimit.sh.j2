@@ -1,0 +1,16 @@
+#!/bin/bash
+IFACE="{{ ansible_default_ipv4.interface }}"
+
+tc qdisc del dev $IFACE root 2>/dev/null || true
+
+tc qdisc add dev $IFACE root handle 1: htb default 30
+
+tc class add dev $IFACE parent 1: classid 1:1 htb rate {{ total_bandwidth }}
+
+tc class add dev $IFACE parent 1:1 classid 1:10 htb rate {{ dnstt_rate }} ceil {{ dnstt_rate }}
+
+tc class add dev $IFACE parent 1:1 classid 1:30 htb rate {{ total_bandwidth }}
+
+tc filter add dev $IFACE protocol ip parent 1:0 prio 1 u32 match ip sport {{ dnstt_client_port }} 0xffff flowid 1:10
+
+tc qdisc add dev $IFACE parent 1:10 handle 10: {{ qdisc }}

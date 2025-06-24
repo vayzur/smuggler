@@ -1,0 +1,5 @@
+---
+total_bandwidth: 1000mbit
+dnstt_rate: 2mbit
+
+qdisc: fq_codel
