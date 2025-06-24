@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Smuggler Service
+Documentation=https://github.com/vayzur
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=20
+StartLimitBurst=10
+
+[Service]
+CPUAccounting=no
+MemoryAccounting=no
+IOAccounting=no
+IPAccounting=no
+TasksAccounting=no
+CPUQuota=
+MemoryMax=
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=98
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+LimitRTPRIO=99
+LimitRTTIME=infinity
+LimitNPROC=infinity
+LimitNOFILE=infinity
+LimitMEMLOCK=infinity
+OOMScoreAdjust=-1000
+ExecStart=/usr/local/bin/dnstt-server -udp {{ dnstt_server_addr }} -privkey-file {{ dnstt_privkey_path }} {{ dnstt_domain }} {{ dnstt_forward_addr }}
+Restart=always
+RestartSec=5
+TimeoutStartSec=3
+
+[Install]
+WantedBy=multi-user.target
