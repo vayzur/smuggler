@@ -1,0 +1,26 @@
+---
+- name: Copy dnstt-server
+  copy:
+    src: dnstt-server
+    dest: /usr/local/bin/dnstt-server
+    mode: 0755
+
+- name: Generate keypair if not exists
+  command: >
+    dnstt-server -privkey-file {{ dnstt_privkey_path }} -pubkey-file {{ dnstt_pubkey_path }}
+  args:
+    creates: "{{ dnstt_privkey_path }}"
+
+- name: Fetch server public key
+  fetch:
+    src: "{{ dnstt_pubkey_path }}"
+    dest: "/tmp/{{ dnstt_pubkey }}"
+    flat: true
+
+- name: Make smuggler systemd service
+  template:
+    src: smuggler.service.j2
+    dest: /etc/systemd/system/smuggler.service
+  changed_when: true
+  notify:
+    - Restart smuggler
