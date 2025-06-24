@@ -110,5 +110,5 @@ ss -unlp | grep 53
 ### 4. Run the Playbooks
 
 ```bash
-ansible-playbook -i inventories/production/hosts.yml smuggler.yml
+ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
