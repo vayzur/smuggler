@@ -4,3 +4,4 @@
   roles:
     - { role: common, tags: common }
     - { role: server, tags: server }
+    - { role: proxy, tags: proxy, when: proxy.enabled }

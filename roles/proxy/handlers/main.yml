@@ -1,0 +1,7 @@
+---
+- name: Enable smuggler-proxy
+  systemd:
+    name: smuggler-proxy
+    daemon_reload: true
+    enabled: true
+    state: restarted
