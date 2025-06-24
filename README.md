@@ -112,3 +112,9 @@ ss -unlp | grep 53
 ```bash
 ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
+
+---
+
+# Credits
+
+- [dnstt](https://www.bamsoftware.com/software/dnstt)
