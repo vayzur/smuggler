@@ -1,0 +1,3 @@
+inventory/*
+!inventory/sample.yml
+!inventory/group_vars
