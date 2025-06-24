@@ -1,0 +1,5 @@
+---
+proxy:
+  enabled: false
+  remote_host: 127.0.0.1
+  remote_port: "{{ ansible_port }}"
