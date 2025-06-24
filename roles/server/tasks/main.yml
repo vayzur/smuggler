@@ -7,7 +7,7 @@
 
 - name: Generate keypair if not exists
   command: >
-    dnstt-server -privkey-file {{ dnstt_privkey_path }} -pubkey-file {{ dnstt_pubkey_path }}
+    dnstt-server -gen-key -privkey-file {{ dnstt_privkey_path }} -pubkey-file {{ dnstt_pubkey_path }}
   args:
     creates: "{{ dnstt_privkey_path }}"
 
