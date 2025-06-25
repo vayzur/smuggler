@@ -82,7 +82,8 @@ vim inventory/group_vars/all/server.yml
 Example `server.yml`:
 
 ```yaml
-dnstt_forward_addr: "127.0.0.1:8000"
+dnstt_forward_addr: 127.0.0.1
+dnstt_forward_port: 11882
 ```
 
 ```bash
@@ -98,7 +99,8 @@ dnstt_dns_mode: "udp"
 ## https://doh.domain.tld/dns-query, dot.domain.tld:853, 1.1.1.1
 dnstt_client_resolver: 217.218.155.155
 
-dnstt_client_listen_addr: "0.0.0.0:7000"
+dnstt_client_addr: 0.0.0.0
+dnstt_client_port: 11882
 ```
 
 ### 3. Ensure DNS (53) port is open on server:
@@ -107,10 +109,16 @@ dnstt_client_listen_addr: "0.0.0.0:7000"
 ss -unlp | grep 53
 ```
 
-### 4. Run the Playbooks
+### 4. Deploy tunnel between two servers
 
 ```bash
 ansible-playbook -i inventory/hosts.yml smuggler.yml
+```
+
+### 5. Deploy only dnstt server
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/server.yml
 ```
 
 ## Credits
