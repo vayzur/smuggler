@@ -1,3 +1,5 @@
 ---
 dnstt_forward_addr: 127.0.0.1
 dnstt_forward_port: 11882
+
+dnstt_server_mtu: 1232
