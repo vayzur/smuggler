@@ -71,8 +71,6 @@ If your domain is `mydomain.com` and server IP is `203.0.113.1`:
 
 The `t.mydomain.com` part is your tunnel domain that clients will use.
 
-کامل‌ترین کار اینه که اون قسمت README رو به این شکل اضافه کنیم، درست بعد از بخش "Building DNSTT Binaries":
-
 ---
 
 ## 🏗️ Precompiled Binaries (Recommended)
