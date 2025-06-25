@@ -302,7 +302,7 @@ Configure your application to use the client IP and client port.
 
 **"Tunnel not working"**
 - Verify the forward address is correct and service is running
-- Check server logs: `journalctl -u dnstt-server -f`
+- Check server logs: `journalctl -u smuggler -f`
 
 ---
 
