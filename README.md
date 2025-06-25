@@ -96,8 +96,8 @@ Example `client.yml`:
 ## dot, doh, udp
 dnstt_dns_mode: "udp"
 
-## https://doh.domain.tld/dns-query, dot.domain.tld:853, 1.1.1.1
-dnstt_client_resolver: 217.218.155.155
+## https://doh.domain.tld/dns-query, dot.domain.tld:853, 1.1.1.1:53
+dnstt_client_resolver: "217.218.155.155:53"
 
 dnstt_client_addr: 0.0.0.0
 dnstt_client_port: 11882
