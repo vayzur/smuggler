@@ -71,11 +71,31 @@ If your domain is `mydomain.com` and server IP is `203.0.113.1`:
 
 The `t.mydomain.com` part is your tunnel domain that clients will use.
 
+کامل‌ترین کار اینه که اون قسمت README رو به این شکل اضافه کنیم، درست بعد از بخش "Building DNSTT Binaries":
+
 ---
 
-## 🔨 Building DNSTT Binaries
+## 🏗️ Precompiled Binaries (Recommended)
 
-The automation needs the DNSTT program files. You need to build these yourself.
+You don't need to build anything yourself.
+Precompiled binaries for **Linux x86\_64** are already included and ready to use:
+
+```
+smuggler/
+├── roles/
+│   ├── server/files/dnstt-server      ✅ already included
+│   └── client/files/dnstt-client      ✅ already included
+```
+
+> These are statically compiled and work on most modern Linux systems.
+> You only need to build manually if you're using a different architecture or want to customize the binary.
+
+---
+
+## 🔨 Building DNSTT Binaries (optional — precompiled binaries already included)
+
+Smuggler includes precompiled DNSTT binaries for Linux (x86_64), so in most cases, you don’t need to build anything.
+However, if you're running on a different architecture or want to compile from source, follow the steps below.
 
 ### Step 1: Get the Source Code
 ```bash
