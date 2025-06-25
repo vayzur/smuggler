@@ -4,4 +4,4 @@
   roles:
     - { role: common, tags: common }
     - { role: client, tags: client }
-    - { role: tc, tags: tc, when: ratelimit.enabled }
+    - { role: tc, tags: tc, when: ratelimit_enabled }

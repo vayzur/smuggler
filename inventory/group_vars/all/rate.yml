@@ -1,4 +1,5 @@
 ---
+ratelimit_enabled: false
 total_bandwidth: 1000mbit
 dnstt_rate: 2mbit
 
