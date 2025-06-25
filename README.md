@@ -87,7 +87,7 @@ smuggler/
 │   └── client/files/dnstt-client      ✅ already included
 ```
 
-> These are statically compiled and work on most modern Linux systems.
+> These are statically compiled and work on most modern Linux systems.  
 > You only need to build manually if you're using a different architecture or want to customize the binary.
 
 ---
