@@ -235,6 +235,7 @@ Control how much bandwidth the tunnel uses.
 
 Create `inventory/group_vars/all/rate.yml`:
 ```yaml
+ratelimit_enabled: true
 # Total bandwidth available
 total_bandwidth: 1000mbit
 
@@ -250,8 +251,7 @@ Automatically set up a SOCKS proxy on the server.
 
 Create `inventory/group_vars/all/proxy.yml`:
 ```yaml
-proxy:
-  enabled: true    # Creates a SSH SOCKS proxy
+proxy_enabled: true    # Creates a SSH SOCKS proxy
 ```
 
 ---
