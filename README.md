@@ -1,50 +1,64 @@
 # Smuggler
 
-Smuggler is an automation tool to set up stealthy DNSTT (DNS tunnel) between internal (e.g., censored) and external (e.g., uncensored) Linux servers.
+Smuggler is an Ansible-based automation system that sets up a stealthy DNS tunnel using [dnstt](https://www.bamsoftware.com/software/dnstt) between a server (typically outside censorship) and an optional client (inside censorship).
+
+---
 
 ## ⚙️ Requirements
 
-### Tunnel Setup
+### Server and Client Nodes
 
-You need one (or more) Linux-based servers:
+- Linux-based servers (Debian/Ubuntu)
+- Root access via SSH (key-based)
+- External DNS provider access (for setting up NS, A/AAAA records)
 
-* **Server Node** (typically outside censorship)
-* **Client Node** (typically inside censorship/NAT) (Optional)
+### Control Machine (running Ansible)
 
-### Control Machine (your system running Ansible):
+- Linux-based system (Use WSL2 if you are on Windows.)
+- Python ≥ 3.11
+- Ansible ≥ 2.14
+- SSH access to server and client nodes
 
-* Python ≥ 3.11
-* Ansible
-* SSH access to both server and client nodes
+---
 
-If you're on **Windows**, use **WSL2** (Ubuntu preferred) as your Ansible controller.
+## 🌐 DNS Configuration
 
-## 🏗️ Build (Static Binaries)
+Before deployment, configure the following DNS records in your DNS provider panel:
 
-1. Clone the DNSTT source:
+| Record Type | Name             | Value                     |
+|-------------|------------------|---------------------------|
+| A           | tns.example.com  | `<server_public_ipv4>`   |
+| AAAA        | tns.example.com  | `<server_public_ipv6>`   |
+| NS          | t.example.com    | `tns.example.com`        |
+
+Replace `example.com` with your domain and `tns` with the subdomain of your choice.
+
+---
+
+## ⚒️ Build Static DNSTT Binaries
+
+### 1. Clone the dnstt repo
 
 ```bash
 git clone https://www.bamsoftware.com/git/dnstt.git
 cd dnstt
 ````
 
-2. Build the **server** binary:
+### 2. Build server binary
 
 ```bash
 cd dnstt-server
-
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dnstt-server -ldflags="-s -w -extldflags '-static'"
 ```
 
-3. Build the **client** binary:
+### 3. Build client binary
 
 ```bash
-cd dnstt-client
-
+cd ../dnstt-client
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dnstt-client -ldflags="-s -w -extldflags '-static'"
 ```
 
-4. Place the binaries in the appropriate Ansible role directories:
+### 4. Move binaries to role directories
 
 ```
 roles/
@@ -52,75 +66,156 @@ roles/
 └── client/files/dnstt-client
 ```
 
-## 🚀 Deploy
+---
 
-### 1. Clone Smuggler
+## 🕵️ Setup Smuggler
+
+### 1. Clone this repository
 
 ```bash
 git clone https://github.com/vayzur/smuggler.git
 cd smuggler
 ```
 
-### 2. Prepare Inventory
+### 2. Edit host inventory
 
-Edit the inventory variables:
+Example `inventory/hosts.yml`:
+
+```yaml
+all:
+  vars:
+    ansible_port: 3022
+    ansible_user: root
+
+  hosts:
+    dnstt_server:
+      ansible_host: 203.11.0.4
+    dnstt_client:
+      ansible_host: 3.44.2.23
+```
+
+### 3. Configure global variables
 
 ```bash
 vim inventory/group_vars/all/all.yml
 ```
 
-Example `all.yml`:
+Example:
 
 ```yaml
-dnstt_domain: ns.example.com
+dnstt_domain: t.example.com
 ```
+
+### 4. Server configuration
 
 ```bash
 vim inventory/group_vars/all/server.yml
 ```
 
-Example `server.yml`:
+Example:
 
 ```yaml
 dnstt_forward_addr: 127.0.0.1
 dnstt_forward_port: 11882
 ```
 
+This is where the tunnel will forward traffic (usually your internal SOCKS/HTTP proxy or SSH).
+
+### 5. Client configuration
+
 ```bash
 vim inventory/group_vars/all/client.yml
 ```
 
-Example `client.yml`:
+Example:
 
 ```yaml
-## dot, doh, udp
-dnstt_dns_mode: "udp"
-
-## https://doh.domain.tld/dns-query, dot.domain.tld:853, 1.1.1.1:53
+dnstt_dns_mode: "udp"  # or "dot" or "doh"
 dnstt_client_resolver: "217.218.155.155:53"
-
 dnstt_client_addr: 0.0.0.0
 dnstt_client_port: 11882
 ```
 
-### 3. Ensure DNS (53) port is open on server:
+---
 
-```bash
-ss -unlp | grep 53
-```
+## 🚀 Deployment
 
-### 4. Deploy tunnel between two servers
+### 1. Deploy full tunnel (server + client)
 
 ```bash
 ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
 
-### 5. Deploy only dnstt server
+### 2. Deploy server only
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/server.yml
 ```
 
-## Credits
+---
 
-- [dnstt](https://www.bamsoftware.com/software/dnstt)
+## 📦 Rate Limiting
+
+You can apply rate limits to the DNSTT tunnel on the client node.
+
+Create or edit:
+
+```bash
+vim inventory/group_vars/all/rate.yml
+```
+
+Example:
+
+```yaml
+total_bandwidth: 1000mbit
+dnstt_rate: 2mbit
+qdisc: fq_pie
+```
+
+---
+
+## 🧦 SSH SOCKS Proxy (Optional)
+
+You can enable a dynamic SOCKS proxy via SSH on the server.
+
+Create:
+
+```bash
+vim inventory/group_vars/all/proxy.yml
+```
+
+Example:
+
+```yaml
+proxy:
+  enabled: true
+```
+
+---
+
+## 🧪 Verification
+
+Ensure DNS port 53 is open on the server:
+
+```bash
+ss -unlp | grep 53
+```
+
+Verify that the NS delegation works by querying:
+
+```bash
+dig @<your_dns_resolver> t.example.com NS
+```
+
+---
+
+## 📝 Notes
+
+* DNS resolvers on the client side must support recursive queries.
+* DNSTT is UDP-based and stealthy, but stability can vary depending on ISP and resolver quality.
+
+---
+
+## 🧾 Credits
+
+* [dnstt by David Fifield](https://www.bamsoftware.com/software/dnstt)
