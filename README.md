@@ -11,10 +11,6 @@ DNSTT creates a tunnel that makes your internet traffic look like DNS requests. 
 
 ## Architecture Overview
 
-```
-[Your Device] → [Optional Client Server] → [DNS Tunnel] → [Server] → [Internet]
-```
-
 There are two ways to use this:
 
 ### Option 1: Direct Connection
@@ -178,14 +174,14 @@ Only edit `inventory/group_vars/all/client.yml` if you're setting up a client se
 
 ```yaml
 # DNS resolution method
-dnstt_dns_mode: "udp"                    # Options: "udp", "dot", "doh"
+dnstt_dns_mode: "udp" # Options: "udp", "dot", "doh"
 
 # DNS server to use for resolving tunnel domain
-dnstt_client_resolver: "8.8.8.8:53"     # Any public DNS server
+dnstt_client_resolver: "217.218.155.155:53" # Any public DNS server
 
 # Where the client listens for connections
-dnstt_client_addr: 0.0.0.0              # Listen on all interfaces
-dnstt_client_port: 8080                  # Port to listen on
+dnstt_client_addr: 0.0.0.0 # Listen on all interfaces
+dnstt_client_port: 8080    # Port to listen on
 ```
 
 **What this means:**
