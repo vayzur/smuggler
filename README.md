@@ -92,7 +92,7 @@ smuggler/
 
 ---
 
-## 🔨 Building DNSTT Binaries (optional — precompiled binaries already included)
+## 🔨 Building DNSTT Binaries (Optional)
 
 Smuggler includes precompiled DNSTT binaries for Linux (x86_64), so in most cases, you don’t need to build anything.
 However, if you're running on a different architecture or want to compile from source, follow the steps below.
