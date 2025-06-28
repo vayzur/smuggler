@@ -1,5 +1,5 @@
 ---
-- hosts: client
+- hosts: client_nodes
   become: true
   pre_tasks:
     - name: Filter tunnels for this host

@@ -8,6 +8,6 @@ all:
       ansible_host: sub.domain.tld
 
   children:
-    server:
+    server_nodes:
       hosts:
         node1:
