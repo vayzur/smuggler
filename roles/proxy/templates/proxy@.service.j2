@@ -1,7 +1,5 @@
-# {{ ansible_managed }}
-
 [Unit]
-Description=Smuggler Service
+Description=Smuggler SSH proxy for {{ item.0.name }}-{{ item.1.name }}
 Documentation=https://github.com/vayzur
 After=network-online.target
 Wants=network-online.target
@@ -26,7 +24,7 @@ LimitNPROC=infinity
 LimitNOFILE=infinity
 LimitMEMLOCK=infinity
 OOMScoreAdjust=-1000
-ExecStart=/usr/local/bin/dnstt-server -udp {{ dnstt_server_addr }} -mtu {{ dnstt_server_mtu }} -privkey-file {{ dnstt_privkey_path }} {{ dnstt_domain }} {{ dnstt_forward_addr }}:{{ dnstt_forward_port }}
+ExecStart=/usr/bin/ssh -T -N -D {{ item.0.server.forward_addr }}:{{ item.0.server.forward_port }} -o NoHostAuthenticationForLocalhost=yes {{ item.1.remote_host }} -p {{ item.1.remote_port }}
 Restart=always
 RestartSec=5
 TimeoutStartSec=3

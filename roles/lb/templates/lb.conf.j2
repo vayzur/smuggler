@@ -1,0 +1,37 @@
+#!/usr/sbin/nft -f
+# vim: set tabstop=4 shiftwidth=4 expandtab:
+
+table ip lb {
+    set lb_ports {
+        type inet_service
+        flags interval
+        auto-merge
+        elements = { {{ lb.ports | join(', ') }} }
+    }
+
+    chain prerouting {
+        type nat hook prerouting priority dstnat; policy accept;
+{% if lb.type == 'hash' %}
+        tcp dport @lb_ports dnat to jhash ip saddr . tcp dport mod {{ tuns_length }} map {
+{% for tun in tuns %}
+            {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+        }
+{% elif lb.type == 'random' %}
+        tcp dport @lb_ports dnat to numgen random mod {{ tuns_length }} map {
+{% for tun in tuns %}
+            {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+        }
+{% else %}
+        tcp dport @lb_ports dnat to numgen inc mod {{ tuns_length }} map {
+{% for tun in tuns %}
+            {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+        }
+{% endif %}
+    }
+}

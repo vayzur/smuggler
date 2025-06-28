@@ -1,0 +1,8 @@
+---
+- name: Configure sysctl settings
+  template:
+    src: sysctl.conf.j2
+    dest: /etc/sysctl.d/11-tcpkeepalive.conf
+  changed_when: true
+  notify:
+    - Reload sysctl

@@ -1,7 +1,0 @@
----
-- name: Restart smuggler
-  systemd:
-    name: smuggler
-    enabled: true
-    state: restarted
-    daemon_reload: true
