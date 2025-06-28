@@ -1,9 +1,20 @@
 ---
-- name: Make nftables Load Balacner conf
+- name: Set Load Balacner config for client nodes
+  set_fact:
+    lb_conf: "client_nodes_lb.conf"
+  when: "'client_nodes' in group_names"
+
+- name: Set Load Balacner config for server nodes
+  set_fact:
+    lb_conf: "server_nodes_lb.conf"
+  when: "'server_nodes' in group_names"
+
+- name: Deploy Load Balacner config
   template:
-    src: lb.conf.j2
+    src: "{{ lb_conf }}"
     dest: /etc/lb.conf
+    mode: 0644
   changed_when: true
-  tags: lb
+  when: lb_conf is defined
   notify:
     - Reload lb

@@ -1,5 +1,5 @@
 ---
-- hosts: server
+- hosts: server_nodes
   become: true
   pre_tasks:
     - name: Filter tunnels for this host
@@ -12,3 +12,4 @@
     - { role: server, tags: server }
     - { role: sysctl, tags: sysctl }
     - { role: proxy, tags: proxy, when: proxy_enabled }
+    - { role: lb, tags: lb, when: lb_enabled }

@@ -18,14 +18,14 @@ all:
       ansible_host: lb2.domain.tld
 
   children:
-    server:
+    server_nodes:
       hosts:
         node1:
         node2:
         node3:
         node4:
 
-    client:
+    client_nodes:
       hosts:
         lb1:
         lb2:
