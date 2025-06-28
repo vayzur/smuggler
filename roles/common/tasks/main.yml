@@ -1,0 +1,13 @@
+---
+- name: Install base packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+
+- name: Enable nftables
+  systemd:
+    name: nftables
+    enabled: true
+    state: restarted
+    daemon_reload: true

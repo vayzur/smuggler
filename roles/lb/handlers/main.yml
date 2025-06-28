@@ -1,0 +1,5 @@
+---
+- name: Reload lb
+  command: nft -f /etc/lb.conf
+  ignore_errors: true
+  tags: lb

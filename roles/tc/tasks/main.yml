@@ -1,19 +1,19 @@
 ---
-- name: Make dnstt ratelimit script
+- name: Make dnstt rate script
   template:
-    src: ratelimit.sh.j2
-    dest: /opt/dnstt-ratelimit.sh
+    src: rate.sh.j2
+    dest: /opt/rate.sh
     mode: 0755
     owner: root
     group: root
 
-- name: Make dnstt ratelimit service
+- name: Make dnstt rate service
   template:
-    src: ratelimit.service.j2
-    dest: /etc/systemd/system/dnstt-ratelimit.service
+    src: rate.service.j2
+    dest: /etc/systemd/system/rate.service
     mode: 0644
     owner: root
     group: root
   changed_when: true
   notify:
-    - Enable dnstt-ratelimit
+    - Enable rate

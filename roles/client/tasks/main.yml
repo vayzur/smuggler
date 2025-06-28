@@ -7,14 +7,36 @@
 
 - name: Copy server public key to client
   copy:
-    src: "/tmp/{{ dnstt_pubkey }}"
-    dest: "{{ dnstt_pubkey_path }}"
+    src: "/tmp/{{ tun.name }}.pub"
+    dest: "{{ keys_path }}/{{ tun.name }}.pub"
     mode: 0644
+  loop: "{{ tuns }}"
+  loop_control:
+    loop_var: tun
 
-- name: Make smuggler systemd service
+- name: Make systemd unit file for each tunnel
   template:
-    src: smuggler.service.j2
-    dest: /etc/systemd/system/smuggler.service
+    src: smuggler@.service.j2
+    dest: "/etc/systemd/system/smuggler@{{ tun.name }}.service"
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ tuns }}"
+  loop_control:
+    loop_var: tun
   changed_when: true
-  notify:
-    - Restart smuggler
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  changed_when: true
+
+- name: Enable and start tunnel services
+  systemd:
+    name: "smuggler@{{ tun.name }}"
+    enabled: true
+    state: restarted
+  loop: "{{ tuns }}"
+  loop_control:
+    loop_var: tun
+  changed_when: true

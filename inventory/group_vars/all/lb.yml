@@ -1,0 +1,11 @@
+---
+# lb_enabled: false
+
+# lb:
+#   type: "random" ## Options: hash, random, roundrobin
+#   ports:
+#     - "8080"
+#     - "2087"
+#     - "2096"
+#     - "2095"
+#     - "4100-4200"

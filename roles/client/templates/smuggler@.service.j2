@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Smuggler Service
+Description=Smuggler {{ tun.name }} Service
 Documentation=https://github.com/vayzur
 After=network-online.target
 Wants=network-online.target
@@ -26,7 +26,7 @@ LimitNPROC=infinity
 LimitNOFILE=infinity
 LimitMEMLOCK=infinity
 OOMScoreAdjust=-1000
-ExecStart=/usr/local/bin/dnstt-client -{{ dnstt_dns_mode }} {{ dnstt_client_resolver }} -pubkey-file {{ dnstt_pubkey_path }} {{ dnstt_domain }} {{ dnstt_client_addr }}:{{ dnstt_client_port }}
+ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ tun.name }}.pub {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
 Restart=always
 RestartSec=5
 TimeoutStartSec=3

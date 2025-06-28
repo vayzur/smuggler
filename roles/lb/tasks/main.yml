@@ -1,0 +1,9 @@
+---
+- name: Make nftables Load Balacner conf
+  template:
+    src: lb.conf.j2
+    dest: /etc/lb.conf
+  changed_when: true
+  tags: lb
+  notify:
+    - Reload lb

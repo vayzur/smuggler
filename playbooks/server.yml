@@ -1,7 +1,14 @@
 ---
-- hosts: dnstt_server
+- hosts: server
   become: true
+  pre_tasks:
+    - name: Filter tunnels for this host
+      set_fact:
+        tuns: "{{ tunnels | selectattr('server_node', 'equalto', inventory_hostname) | list }}"
+        tuns_length: "{{ tunnels | selectattr('server_node', 'equalto', inventory_hostname) | list | length }}"
+      tags: always
   roles:
     - { role: common, tags: common }
     - { role: server, tags: server }
+    - { role: sysctl, tags: sysctl }
     - { role: proxy, tags: proxy, when: proxy_enabled }
