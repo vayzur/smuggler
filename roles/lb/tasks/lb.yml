@@ -10,14 +10,14 @@
 - name: Deploy Load Balacner config
   template:
     src: "{{ lb_conf }}.j2"
-    dest: /etc/nftables.d/smuggler-lb.conf
+    dest: /etc/nftables.d/lb-smuggler.conf
     mode: 0644
   changed_when: true
 
 - name: Make smuggler load balancing service
   template:
-    src: smuggler-lb.service.j2
-    dest: "/etc/systemd/system/smuggler-lb.service"
+    src: lb-smuggler.service.j2
+    dest: "/etc/systemd/system/lb-smuggler.service"
     mode: 0644
     owner: root
     group: root

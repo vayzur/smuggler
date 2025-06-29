@@ -8,7 +8,7 @@ Type=oneshot
 RemainAfterExit=yes
 
 ExecStartPre=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft flush table ip lb || true'
-ExecStart=/usr/sbin/nft -f /etc/nftables.d/smuggler-lb.conf
+ExecStart=/usr/sbin/nft -f /etc/nftables.d/lb-smuggler.conf
 ExecStop=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft flush table ip lb || true'
 ExecStopPost=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft delete table ip lb || true'
 

@@ -34,4 +34,9 @@ table ip lb {
         }
 {% endif %}
     }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        oifname != "lo" iifname "lo" snat to {{ ansible_default_ipv4.address }}
+    }
 }
