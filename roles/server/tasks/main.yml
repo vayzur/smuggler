@@ -29,7 +29,7 @@
   delegate_to: localhost
   when: lb_enabled and not shared_keys.stat.exists
 
-- name: Copy shared privkey to nodes
+- name: Copy shared privkey to server node
   copy:
     src: "/tmp/{{ shared_privkey }}"
     dest: "{{ keys_path }}/{{ shared_privkey }}"
