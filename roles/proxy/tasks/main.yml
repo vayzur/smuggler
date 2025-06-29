@@ -1,9 +1,22 @@
 ---
-- name: Make SSH proxy systemd service
+- name: Make systemd unit file for each proxy
   template:
-    src: smuggler-proxy.service.j2
-    dest: /etc/systemd/system/smuggler-proxy.service
+    src: proxy@.service.j2
+    dest: "/etc/systemd/system/proxy@{{ item.0.name }}-{{ item.1.name }}.service"
     mode: 0644
     owner: root
     group: root
-  changed_when: true
+  loop: "{{ tuns | subelements('server.proxy', skip_missing=True) }}"
+  register: units_result
+  
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  when: units_result.changed
+
+- name: Enable and start proxy services
+  systemd:
+    name: "proxy@{{ item.0.name }}-{{ item.1.name }}.service"
+    enabled: true
+    state: restarted
+  loop: "{{ tuns | subelements('server.proxy', skip_missing=True) }}"

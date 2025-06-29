@@ -1,52 +1,191 @@
 # Smuggler
 
-Smuggler is an Ansible-based automation tool that helps you set up a secure DNS tunnel using [dnstt](https://www.bamsoftware.com/software/dnstt). This tunnel lets you bypass internet censorship by disguising your traffic as normal DNS queries.
-
-## What Does This Do?
-
-DNSTT creates a tunnel that makes your internet traffic look like DNS requests. This is useful when:
-- You're behind a firewall that blocks most traffic but allows DNS
-- You want to bypass internet censorship
-- You need a stealthy way to tunnel traffic through restrictive networks
-
-## Architecture Overview
-
-There are two ways to use this:
-
-### Option 1: Direct Connection
-- You connect directly to the server from your device
-- Only need to set up the server part
-- Good for personal use
-
-### Option 2: Server-to-Server Tunnel
-- Set up both a server and client on separate machines
-- Creates a tunnel between two servers
-- Good for serving multiple users or more complex setups
-
-## ⚠️ Important Setup Notes
-
-- **Client setup is optional**: Only configure the client if you want a server-to-server tunnel
-- **Only add dnstt_client to your hosts file when setting up the tunnel between two servers**
-- **For direct connections**: Skip client configuration and connect directly to the server
-- **Supported systems**: Only x86_64 architecture on Debian/Ubuntu 22.04 or 24.04
+Smuggler is an Ansible-powered deployment system for building and managing secure DNS tunnels using [dnstt](https://www.bamsoftware.com/software/dnstt). It enables traffic tunneling over DNS—perfect for bypassing censorship, firewall restrictions, or creating covert communication paths in hostile networks.
 
 ---
 
-## 📋 Requirements
+## 🚀 Features
 
-### What You Need
-- **Server**: A Linux server outside the censored network (Debian/Ubuntu 22/24, x86_64)
-- **Client** (optional): Another Linux server inside the censored network (Debian/Ubuntu 22/24, x86_64)
-- **Control machine**: Your computer running Ansible (Linux/WSL2)
-- **Domain**: A domain name you control
-- **DNS provider**: Access to configure DNS records
+- **Declarative Tunnel Setup** — All configuration is defined in YAML, no manual scripting needed
+- **Multi-Node Architecture** — Support for multiple client and server nodes across distributed environments
+- **Load Balancing (Client & Server Side)** — Choose between `hash`, `random`, or `roundrobin` strategies to distribute traffic
+- **Redundancy & High Availability** — If one server fails, others continue to serve the tunnel
+- **Per-Tunnel Key Pairs** — Each tunnel uses a unique key pair for enhanced isolation and security
+- **Optional Bandwidth Limiting** — Apply precise rate limits using `htb`, with support for fair queuing via `fq_codel`, `cake`, `fq_pie`, and others.
+- **SOCKS Proxy via SSH** — Easily proxy traffic over the tunnel using built-in SOCKS5 support
+- **Distributed Design** — Per-node behavior is controlled via inventory configuration
+- **Self-Healing (Upcoming)** — Automatic recovery from failed nodes via dynamic rule updates
 
-### Software Requirements
-- **Control Machine:**
-  - Linux (or WSL2 on Windows)
-  - Python 3.11 or newer
-  - Ansible 2.14 or newer
-  - SSH key access to your servers
+---
+
+## Architecture Overview
+
+Smuggler can operate in multiple modes depending on your needs:
+
+### 🔹 Mode 1: Single Server (Direct Access)
+- Ideal for personal use
+- Only one server node is deployed
+- Tunnel is directly accessible without client-side load balancing
+
+### 🔹 Mode 2: Client/Server Tunnel (Multi-Node)
+- Multiple client and server nodes
+- Server-side DNS load balancing with DNSTT instances on different ports
+- Client-side load balancing to distribute DNS queries across multiple entry points
+
+---
+
+## ⚙️ Inventory Structure
+
+Smuggler uses [Ansible inventory](https://docs.ansible.com/) to manage servers and settings.
+
+```bash
+inventory/
+├── group_vars/
+│   ├── all/
+│   │   ├── all.yml            # Global settings
+│   │   └── tunnels.yml        # Tunnel definitions
+│   ├── client_nodes/
+│   │   ├── lb.yml             # Client-side load balancing config
+│   │   └── rate.yml           # Client bandwidth throttling
+│   └── server_nodes/
+│       └── lb.yml             # Server-side load balancing config
+├── hosts.yml                  # Node definitions
+├── lb.yml                     # LB-only scenario
+└── single.yml                 # Single-server scenario
+````
+
+---
+
+## 🧠 Tunnel Definition (tunnels.yml)
+
+Tunnel configuration is fully declarative and stored in `group_vars/all/tunnels.yml`.
+
+Each tunnel requires:
+
+* A **unique name**
+* A **client\_node** and **server\_node**
+* A **domain** delegated via DNS
+* A **client** and **server** section with DNS and forwarding parameters
+
+### Example:
+
+```yaml
+tunnels:
+  - name: t0
+    client_node: lb
+    server_node: node1
+    domain: d.domain.tld
+    client:
+      dns_mode: udp
+      dns_resolver: "8.8.8.8:53"
+      bind_addr: 127.0.0.1
+      bind_port: 11885
+    server:
+      bind_addr: "127.0.0.1"
+      bind_port: 5301
+      forward_addr: 127.0.0.1
+      forward_port: 1080
+      mtu: 1232
+```
+
+> 🔸 **Important**: When using load balancers, client and server tunnel listeners **must bind to `127.0.0.1`** and server ports **must be different from 53** to avoid conflict.
+
+---
+
+## 🧩 hosts.yml Structure
+
+Smuggler detects the node roles using Ansible host groups. Example layout:
+
+### Full Load-Balanced Setup:
+
+```yaml
+all:
+  vars:
+    ansible_port: 3022
+    ansible_user: root
+  hosts:
+    node1:
+      ansible_host: node0.domain.tld
+    node2:
+      ansible_host: node1.domain.tld
+    node3:
+      ansible_host: node2.domain.tld
+    node4:
+      ansible_host: node3.domain.tld
+    lb1:
+      ansible_host: lb1.domain.tld
+    lb2:
+      ansible_host: lb2.domain.tld
+
+  children:
+    server_nodes:
+      hosts:
+        node1:
+        node2:
+        node3:
+        node4:
+
+    client_nodes:
+      hosts:
+        lb1:
+        lb2:
+```
+
+### Minimal Single-Server:
+
+```yaml
+all:
+  vars:
+    ansible_port: 3022
+    ansible_user: root
+  hosts:
+    node1:
+      ansible_host: sub.domain.tld
+  children:
+    server_nodes:
+      hosts:
+        node1:
+```
+
+---
+
+## 🔁 Load Balancing
+
+Enable load balancing by creating `lb.yml` in each node group.
+
+### Client Load Balancer:
+
+`group_vars/client_nodes/lb.yml`:
+
+```yaml
+lb_enabled: true
+lb:
+  type: "random"     # Options: hash, random, roundrobin
+  ports:
+    - "8080"
+    - "2087"
+    - "2096"
+    - "2095"
+    - "4100-4200"
+```
+
+### Server Load Balancer:
+
+`group_vars/server_nodes/lb.yml`:
+
+```yaml
+lb_enabled: true
+lb:
+  type: "hash"       # Options: hash, random, roundrobin
+  ports:
+    - "53"
+```
+
+> 🔸 **Client-side load balancer ports** can be any values — Smuggler automatically maps incoming traffic to the correct internal tunnel ports based on `tunnels.yml`.  
+
+> 🔸 **Server-side load balancer ports** must include only `"53"` because DNS queries always target port 53. Smuggler internally handles distribution to the correct tunnel instances. If the list is empty or contains non-53 ports, server-side load balancing will not function.  
+
+> 🔸 Server-side LB only supports UDP (for DNSTT)  
 
 ---
 
@@ -58,16 +197,18 @@ Before running the automation, you must configure DNS records. This tells the in
 
 Go to your DNS provider and create these records:
 
-| Record Type | Name             | Value                     | Purpose |
-|-------------|------------------|---------------------------|---------|
-| A           | tns.example.com  | `<your_server_ipv4>`     | Points to your server |
-| AAAA        | tns.example.com  | `<your_server_ipv6>`     | Points to your server (IPv6) |
-| NS          | t.example.com    | `tns.example.com`        | Delegates DNS queries to your server |
+| Record Type | Name            | Value                | Purpose                              |
+| ----------- | --------------- | -------------------- | ------------------------------------ |
+| A           | tns.example.com | `<your_server_ipv4>` | Points to your server                |
+| AAAA        | tns.example.com | `<your_server_ipv6>` | Points to your server (IPv6)         |
+| NS          | t.example.com   | `tns.example.com`    | Delegates DNS queries to your server |
 
 ### Example
+
 If your domain is `mydomain.com` and server IP is `203.0.113.1`:
-- A record: `tns.mydomain.com` → `203.0.113.1`
-- NS record: `t.mydomain.com` → `tns.mydomain.com`
+
+* A record: `tns.mydomain.com` → `203.0.113.1`
+* NS record: `t.mydomain.com` → `tns.mydomain.com`
 
 The `t.mydomain.com` part is your tunnel domain that clients will use.
 
@@ -85,35 +226,39 @@ smuggler/
 │   └── client/files/dnstt-client      ✅ already included
 ```
 
-> These are statically compiled and work on most modern Linux systems.  
+> These are statically compiled and work on most modern Linux systems.
 > You only need to build manually if you're using a different architecture or want to customize the binary.
 
 ---
 
 ## 🔨 Building DNSTT Binaries (Optional)
 
-Smuggler includes precompiled DNSTT binaries for Linux (x86_64), so in most cases, you don’t need to build anything.
+Smuggler includes precompiled DNSTT binaries for Linux (x86\_64), so in most cases, you don’t need to build anything.
 However, if you're running on a different architecture or want to compile from source, follow the steps below.
 
 ### Step 1: Get the Source Code
+
 ```bash
 git clone https://www.bamsoftware.com/git/dnstt.git
 cd dnstt
 ```
 
 ### Step 2: Build Server Binary
+
 ```bash
 cd dnstt-server
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dnstt-server -ldflags="-s -w -extldflags '-static'"
 ```
 
 ### Step 3: Build Client Binary (if needed)
+
 ```bash
 cd ../dnstt-client
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dnstt-client -ldflags="-s -w -extldflags '-static'"
 ```
 
 ### Step 4: Place Files in Correct Locations
+
 ```
 smuggler/
 ├── roles/
@@ -123,189 +268,85 @@ smuggler/
 
 ---
 
-## 📝 Configuration Guide
-
-### Step 1: Get Smuggler
-```bash
-git clone https://github.com/vayzur/smuggler.git
-cd smuggler
-```
-
-### Step 2: Configure Your Servers
-
-Edit `inventory/hosts.yml` to define your servers:
-
-**For server-only setup:**
-```yaml
-all:
-  vars:
-    ansible_port: 22          # SSH port (change if different)
-    ansible_user: root        # SSH user
-  hosts:
-    dnstt_server:
-      ansible_host: 203.0.113.1    # Your server's IP address
-```
-
-**For server + client setup:**
-```yaml
-all:
-  vars:
-    ansible_port: 22
-    ansible_user: root
-  hosts:
-    dnstt_server:
-      ansible_host: 203.0.113.1    # Server Node IP (outside censorship)
-    dnstt_client:
-      ansible_host: 3.81.52.20     # Client Node IP (inside censorship)
-```
-
-### Step 3: Configure Global Settings
-
-Edit `inventory/group_vars/all/all.yml`:
-
-```yaml
-# The domain where DNS queries will be sent
-# This should match the NS record you created (t.example.com)
-dnstt_domain: t.mydomain.com
-```
-
-### Step 4: Configure Server Settings
-
-Edit `inventory/group_vars/all/server.yml`:
-
-```yaml
-# Where the server should forward decrypted traffic
-dnstt_forward_addr: 127.0.0.1    # Usually localhost
-dnstt_forward_port: 22           # SSH port, or your proxy port
-
-# Examples of what to forward to:
-# - SSH: 127.0.0.1:22
-# - SOCKS proxy: 127.0.0.1:1080
-# - HTTP proxy: 127.0.0.1:8080
-```
-
-**What this means:** When someone sends traffic through the tunnel, the server will forward it to this address and port.
-
-### Step 5: Configure Client Settings (Optional)
-
-Only edit `inventory/group_vars/all/client.yml` if you're setting up a client server:
-
-```yaml
-# DNS resolution method
-dnstt_dns_mode: "udp" # Options: "udp", "dot", "doh"
-
-# DNS server to use for resolving tunnel domain
-dnstt_client_resolver: "217.218.155.155:53" # Any public DNS server
-
-# Where the client listens for connections
-dnstt_client_addr: 0.0.0.0 # Listen on all interfaces
-dnstt_client_port: 8080    # Port to listen on
-```
-
-**What this means:**
-- `dnstt_dns_mode`: How to send DNS queries (UDP is fastest, DOT/DOH are more secure)
-- `dnstt_client_resolver`: Which DNS server to use for tunnel queries
-- `dnstt_client_addr/port`: Where your applications connect to use the tunnel
-
----
-
 ## 🚀 Running the Setup
 
-### Deploy Everything (Server + Client)
+### Deploy Full Setup (Client + Server)
+
 ```bash
 ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
 
-### Deploy Only Server
+### Deploy Server Only
+
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/server.yml
 ```
 
-### Deploy Only Client
+### Deploy Client Only
+
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/client.yml
 ```
 
 ---
 
-## 🔧 Optional Features
+## 🧪 Testing and Monitoring
 
-### Rate Limiting
-Control how much bandwidth the tunnel uses.
+### Check if DNSTT is Listening
 
-Create `inventory/group_vars/all/rate.yml`:
-```yaml
-ratelimit_enabled: true
-# Total bandwidth available
-total_bandwidth: 1000mbit
-
-# Bandwidth allocated to DNSTT tunnel
-dnstt_rate: 2mbit
-
-# Traffic shaping algorithm
-qdisc: fq_codel
-```
-
-### SSH SOCKS Proxy
-Automatically set up a SOCKS proxy on the server.
-
-Create `inventory/group_vars/all/proxy.yml`:
-```yaml
-proxy_enabled: true    # Creates a SSH SOCKS proxy
-```
-
----
-
-## 🧪 Testing Your Setup
-
-### 1. Check if DNS Server is Running
-On your server:
 ```bash
 ss -unlp | grep 53
 ```
-You should see the DNSTT server listening on port 53.
 
-### 2. Test DNS Delegation
-From any computer:
+### Check DNS Delegation
+
 ```bash
-dig @8.8.8.8 t.mydomain.com NS
+dig @8.8.8.8 t.yourdomain.com NS
 ```
-This should return your server as the nameserver.
 
-### 3. Test the Tunnel
-**For direct connection:**
-Configure your application to use your server IP and the forward port.
+### Check Tunnel Status
 
-**For client setup:**
-Configure your application to use the client IP and client port.
+```bash
+systemctl status smuggler@tun0.service
+```
 
-## ⚠️ Important Notes
+Smuggler now uses **templated systemd units**, one per tunnel:
 
-- **DNS resolvers** must support recursive queries (most public ones do)
-- **Stability varies** depending on your ISP and DNS resolver quality
-- **Performance** is slower than direct connections due to DNS overhead
-- **Stealth** comes at the cost of speed - this is for bypassing censorship, not high-speed browsing
+* `smuggler@tun0.service`
+* `smuggler@tun1.service`
+* etc.
+
+---
+
+## ⚠️ Notes & Limitations
+
+- DNS resolvers must support recursive queries
+- DNS changes (NS/A records) may take time to propagate
+- Performance is limited by DNS packet size and latency
+- This is a stealth tunnel, not a high-speed VPN
 
 ---
 
 ## 🆘 Troubleshooting
 
-### Common Issues
+### Connection Refused
 
-**"Connection refused"**
-- Check if the server is running: `systemctl status smuggler.service`
-- Verify firewall allows port 53: `iptables -nL`
+* Check if tunnel service is running:
+  `systemctl status smuggler@tun0.service`
+* Ensure firewall allows UDP 53
 
-**"DNS resolution failed"**
-- Verify your NS record is working: `dig @8.8.8.8 t.mydomain.com NS`
-- Check DNS propagation (can take up to 24 hours)
+### DNS Resolution Fails
 
-**"Tunnel not working"**
-- Verify the forward address is correct and service is running
-- Check server logs: `journalctl -u smuggler -f`
+* Check NS record: `dig @8.8.8.8 t.domain.com NS`
+* Wait for DNS propagation
+
+### Tunnel Not Working
+
+* Check forward port and service
+* Inspect logs: `journalctl -u smuggler@tun0.service -f`
 
 ---
 
 ## 📚 Credits
 
-- [DNSTT by David Fifield](https://www.bamsoftware.com/software/dnstt)
+* [DNSTT by David Fifield](https://www.bamsoftware.com/software/dnstt)

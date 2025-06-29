@@ -9,3 +9,4 @@ packages:
   - iproute2
   - openssh-client
   - openssh-server
+  - nftables
