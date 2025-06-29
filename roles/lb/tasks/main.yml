@@ -1,28 +1,13 @@
 ---
-- name: Make nftables.d directory
-  file:
-    path: /etc/nftables.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
 - name: Set Load Balacner config for client nodes
   set_fact:
-    lb_conf: "client_nodes_lb.conf"
+    lb_conf: "client-nodes-lb.conf"
   when: "'client_nodes' in group_names"
 
 - name: Set Load Balacner config for server nodes
   set_fact:
-    lb_conf: "server_nodes_lb.conf"
+    lb_conf: "server-nodes-lb.conf"
   when: "'server_nodes' in group_names"
 
-- name: Deploy Load Balacner config
-  template:
-    src: "{{ lb_conf }}.j2"
-    dest: /etc/nftables.d/lb.conf
-    mode: 0644
-  changed_when: true
+- import_tasks: lb.yml
   when: lb_conf is defined
-  notify:
-    - Reload lb

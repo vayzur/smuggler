@@ -1,0 +1,16 @@
+[Unit]
+Description=Smuggler nftables rules for load balancing
+After=network.target nftables.service
+Requires=nftables.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/sbin/nft flush table ip lb
+ExecStart=/usr/sbin/nft -f /etc/nftables.d/smuggler-lb.conf
+ExecStop=/usr/sbin/nft flush table ip lb
+ExecStopPost=/usr/sbin/nft list table ip lb || false && /usr/sbin/nft delete table ip lb
+
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
