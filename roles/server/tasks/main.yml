@@ -15,7 +15,7 @@
 
 - name: Generate shared keys if not exists
   command: >
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ shared_privkey }} -pubkey-file {{ keys_path }}/{{ shared_pubkeye }}
+    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ shared_privkey }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }}
   when: lb_enabled and not shared_keys.stat.exists
 
 - name: Fetch shared keys to localhost
