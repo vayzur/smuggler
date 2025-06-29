@@ -12,12 +12,11 @@
   delegate_to: localhost
   run_once: true
   become: false
-  when: lb_enabled
 
 - name: Generate shared keys if not exists
   command: >
     dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ shared_privkey }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }}
-  when: lb_enabled and not shared_keys.stat.exists
+  when: not shared_keys.stat.exists
 
 - name: Fetch shared keys to localhost
   fetch:
@@ -27,7 +26,7 @@
   loop:
     - "{{ keys_path }}/{{ shared_privkey }}"
     - "{{ keys_path }}/{{ shared_pubkey }}"
-  when: lb_enabled and not shared_keys.stat.exists
+  when: not shared_keys.stat.exists
   run_once: true
 
 - name: Copy shared privkey to server node
@@ -35,27 +34,7 @@
     src: "/tmp/{{ shared_privkey }}"
     dest: "{{ keys_path }}/{{ shared_privkey }}"
     mode: 0600
-  when: lb_enabled and shared_keys.stat.exists
-
-- name: Generate per tunnel key pairs if not exists
-  command: >
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ tun.name }}.key -pubkey-file {{ keys_path }}/{{ tun.name }}.pub
-  args:
-    creates: "{{ keys_path }}/{{ tun.name }}.key"
-  loop: "{{ tuns }}"
-  loop_control:
-    loop_var: tun
-  when: not lb_enabled
-
-- name: Fetch per tunnel public keys from server node
-  fetch:
-    src: "{{ keys_path }}/{{ tun.name }}.pub"
-    dest: "/tmp/{{ tun.name }}.pub"
-    flat: true
-  loop: "{{ tuns }}"
-  loop_control:
-    loop_var: tun
-  when: not lb_enabled
+  when: shared_keys.stat.exists
 
 - name: Make systemd unit file for each tunnel
   template:
