@@ -9,7 +9,7 @@
       tags: always
   roles:
     - { role: common, tags: common }
-    - { role: server, tags: server }
     - { role: sysctl, tags: sysctl }
-    - { role: proxy, tags: proxy, when: proxy_enabled }
     - { role: lb, tags: lb, when: lb_enabled }
+    - { role: server, tags: server }
+    - { role: proxy, tags: proxy, when: proxy_enabled }
