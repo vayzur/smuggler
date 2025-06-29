@@ -1,5 +1,7 @@
 ---
 - name: Reload lb
-  shell: nft flush table ip || true && nft -f /etc/nftables.d/lb.conf
-  ignore_errors: true
-  tags: lb
+  systemd:
+    name: smuggler-lb.serivce
+    enabled: true
+    state: restarted
+    daemon_reload: true
