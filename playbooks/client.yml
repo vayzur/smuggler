@@ -9,7 +9,7 @@
       tags: always
   roles:
     - { role: common, tags: common }
-    - { role: client, tags: client }
     - { role: sysctl, tags: sysctl }
-    - { role: tc, tags: tc, when: tc_enabled }
     - { role: lb, tags: lb, when: lb_enabled }
+    - { role: tc, tags: tc, when: tc_enabled }
+    - { role: client, tags: client }
