@@ -10,7 +10,7 @@
 - name: Deploy Load Balacner config
   template:
     src: "{{ lb_conf }}.j2"
-    dest: /etc/nftables.d/lb.conf
+    dest: /etc/nftables.d/smuggler-lb.conf
     mode: 0644
   changed_when: true
 
