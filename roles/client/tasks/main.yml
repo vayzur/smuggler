@@ -8,7 +8,7 @@
 - name: Copy public shared key to client node
   copy:
     src: "/tmp/{{ shared_pubkey }}"
-    dest: "{{ keys_path }}/{{ item }}"
+    dest: "{{ keys_path }}/{{ shared_pubkey }}"
     mode: "0600"
   when: lb_enabled
 

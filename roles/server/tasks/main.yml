@@ -27,8 +27,8 @@
   loop:
     - "{{ keys_path }}/{{ shared_privkey }}"
     - "{{ keys_path }}/{{ shared_pubkey }}"
-  delegate_to: localhost
   when: lb_enabled and not shared_keys.stat.exists
+  run_once: true
 
 - name: Copy shared privkey to server node
   copy:
