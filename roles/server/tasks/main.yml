@@ -7,10 +7,11 @@
 
 - name: Check if shared key exists
   stat:
-    path: "{{ keys_path }}/{{ shared_privkey }}"
+    path: "/tmp/{{ shared_privkey }}"
   register: shared_keys
   delegate_to: localhost
   run_once: true
+  become: false
   when: lb_enabled
 
 - name: Generate shared keys if not exists
