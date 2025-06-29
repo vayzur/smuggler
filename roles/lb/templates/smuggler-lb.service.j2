@@ -5,12 +5,12 @@ Requires=nftables.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/sbin/nft flush table ip lb
-ExecStart=/usr/sbin/nft -f /etc/nftables.d/smuggler-lb.conf
-ExecStop=/usr/sbin/nft flush table ip lb
-ExecStopPost=/usr/sbin/nft list table ip lb || false && /usr/sbin/nft delete table ip lb
-
 RemainAfterExit=yes
+
+ExecStartPre=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft flush table ip lb || true'
+ExecStart=/usr/sbin/nft -f /etc/nftables.d/smuggler-lb.conf
+ExecStop=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft flush table ip lb || true'
+ExecStopPost=/bin/bash -c 'nft list table ip lb >/dev/null 2>&1 && nft delete table ip lb || true'
 
 [Install]
 WantedBy=multi-user.target
