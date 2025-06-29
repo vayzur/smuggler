@@ -1,0 +1,7 @@
+---
+# lb_enabled: false
+
+# lb:
+#   type: "random" ## Options: hash, random, roundrobin
+#   ports:
+#     - "53"

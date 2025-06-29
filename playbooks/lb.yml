@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+    - inventory/group_vars/all/lb.yml
+    - inventory/group_vars/all/tunnels.yml
+  tasks:
+    - name: Filter tunnels for this host
+      set_fact:
+        tuns: "{{ tunnels | selectattr('client_node', 'equalto', 'lb') | list }}"
+        tuns_length: "{{ tunnels | selectattr('client_node', 'equalto', 'lb') | list | length }}"
+
+    - name: Make nftables LB file
+      template:
+        src: ../roles/lb/templates/lb.conf.j2
+        dest: /tmp/lb.conf

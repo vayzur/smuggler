@@ -1,7 +1,10 @@
 ---
-ratelimit_enabled: false
+tc_enabled: false
 
 total_bandwidth: 1000mbit
 dnstt_rate: 2mbit
+
+netem_jitter: 5ms
+netem_delay: 20ms
 
 qdisc: fq_codel

@@ -1,6 +1,0 @@
----
-- name: Install base packages
-  apt:
-    name: "{{ packages }}"
-    state: present
-    update_cache: true

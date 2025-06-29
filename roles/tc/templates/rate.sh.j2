@@ -11,6 +11,8 @@ tc class add dev $IFACE parent 1:1 classid 1:10 htb rate {{ dnstt_rate }} ceil {
 
 tc class add dev $IFACE parent 1:1 classid 1:30 htb rate {{ total_bandwidth }}
 
-tc filter add dev $IFACE protocol ip parent 1:0 prio 1 u32 match ip sport {{ dnstt_client_port }} 0xffff flowid 1:10
+{% for tun in tuns %}
+tc filter add dev $IFACE protocol ip parent 1:0 prio 1 u32 match ip sport {{ tun.client.bind_port }} 0xffff flowid 1:10
+{% endfor %}
 
 tc qdisc add dev $IFACE parent 1:10 handle 10: {{ qdisc }}

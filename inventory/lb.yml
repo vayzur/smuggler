@@ -1,0 +1,31 @@
+all:
+  vars:
+    ansible_port: 3022
+    ansible_user: root
+
+  hosts:
+    node1:
+      ansible_host: node0.domain.tld
+    node2:
+      ansible_host: node1.domain.tld
+    node3:
+      ansible_host: node2.domain.tld
+    node4:
+      ansible_host: node3.domain.tld
+    lb1:
+      ansible_host: lb1.domain.tld
+    lb2:
+      ansible_host: lb2.domain.tld
+
+  children:
+    server_nodes:
+      hosts:
+        node1:
+        node2:
+        node3:
+        node4:
+
+    client_nodes:
+      hosts:
+        lb1:
+        lb2:

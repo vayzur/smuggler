@@ -1,5 +1,7 @@
+# {{ ansible_managed }}
+
 [Unit]
-Description=Smuggler SSH proxy for DNSTT
+Description=Smuggler Service
 Documentation=https://github.com/vayzur
 After=network-online.target
 Wants=network-online.target
@@ -24,7 +26,7 @@ LimitNPROC=infinity
 LimitNOFILE=infinity
 LimitMEMLOCK=infinity
 OOMScoreAdjust=-1000
-ExecStart=/usr/bin/ssh -T -N -D {{ dnstt_forward_addr }}:{{ dnstt_forward_port }} -o NoHostAuthenticationForLocalhost=yes {{ proxy.remote_host }} -p {{ proxy.remote_port }}
+ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -privkey-file {{ keys_path }}/{{ tun.name }}.key {{ tun.domain }} {{ tun.server.forward_addr }}:{{ tun.server.forward_port }}
 Restart=always
 RestartSec=5
 TimeoutStartSec=3
