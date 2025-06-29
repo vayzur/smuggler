@@ -182,8 +182,10 @@ lb:
 ```
 
 > 🔸 **Client-side load balancer ports** can be any values — Smuggler automatically maps incoming traffic to the correct internal tunnel ports based on `tunnels.yml`.  
+
 > 🔸 **Server-side load balancer ports** must include only `"53"` because DNS queries always target port 53. Smuggler internally handles distribution to the correct tunnel instances. If the list is empty or contains non-53 ports, server-side load balancing will not function.  
-> 🔸 Server-side LB only supports UDP (for DNSTT)
+
+> 🔸 Server-side LB only supports UDP (for DNSTT)  
 
 ---
 
