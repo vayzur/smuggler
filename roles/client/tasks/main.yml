@@ -5,7 +5,14 @@
     dest: /usr/local/bin/dnstt-client
     mode: 0755
 
-- name: Copy server public key to client
+- name: Copy public shared key to client node
+  copy:
+    src: "/tmp/{{ shared_pubkey }}"
+    dest: "{{ keys_path }}/{{ item }}"
+    mode: "0600"
+  when: lb_enabled
+
+- name: Copy per tunnel public keys to client node
   copy:
     src: "/tmp/{{ tun.name }}.pub"
     dest: "{{ keys_path }}/{{ tun.name }}.pub"
@@ -13,6 +20,7 @@
   loop: "{{ tuns }}"
   loop_control:
     loop_var: tun
+  when: not lb_enabled
 
 - name: Make systemd unit file for each tunnel
   template:
