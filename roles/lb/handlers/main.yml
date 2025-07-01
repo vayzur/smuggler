@@ -1,7 +1,7 @@
 ---
 - name: Reload lb
   systemd:
-    name: smuggler-lb.service
+    name: lb-smuggler.service
     enabled: true
     state: restarted
     daemon_reload: true
