@@ -10,7 +10,7 @@ Smuggler is an Ansible-powered deployment system for building and managing secur
 - **Multi-Node Architecture** — Support for multiple client and server nodes across distributed environments
 - **Load Balancing (Client & Server Side)** — Choose between `hash`, `random`, or `roundrobin` strategies to distribute traffic
 - **Redundancy & High Availability** — If one server fails, others continue to serve the tunnel
-- **Per-Tunnel Key Pairs** — Each tunnel uses a unique key pair for enhanced isolation and security
+- **Shared Key Pairs** — A single key pair is shared among all tunnels to support load balancing.
 - **Optional Bandwidth Limiting** — Apply precise rate limits using `htb`, with support for fair queuing via `fq_codel`, `cake`, `fq_pie`, and others.
 - **SOCKS Proxy via SSH** — Easily proxy traffic over the tunnel using built-in SOCKS5 support
 - **Distributed Design** — Per-node behavior is controlled via inventory configuration
