@@ -14,22 +14,28 @@ table ip lb {
 {% if lb.type == 'hash' %}
         udp dport @lb_ports dnat to jhash ip saddr . udp sport mod {{ tuns_length }} map {
 {% for tun in tuns %}
+{% if tun.server.lb | default(true) %}
             {{ loop.index0 }} : {{ tun.server.bind_addr if tun.server.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.server.bind_port }}{% if not loop.last %},{% endif %}
 
+{% endif %}
 {% endfor %}
         }
 {% elif lb.type == 'random' %}
         udp dport @lb_ports dnat to numgen random mod {{ tuns_length }} map {
 {% for tun in tuns %}
+{% if tun.server.lb | default(true) %}
             {{ loop.index0 }} : {{ tun.server.bind_addr if tun.server.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.server.bind_port }}{% if not loop.last %},{% endif %}
 
+{% endif %}
 {% endfor %}
         }
 {% else %}
         udp dport @lb_ports dnat to numgen inc mod {{ tuns_length }} map {
 {% for tun in tuns %}
+{% if tun.server.lb | default(true) %}
             {{ loop.index0 }} : {{ tun.server.bind_addr if tun.server.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.server.bind_port }}{% if not loop.last %},{% endif %}
-
+            
+{% endif %}
 {% endfor %}
         }
 {% endif %}
