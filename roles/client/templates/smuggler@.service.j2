@@ -3,33 +3,54 @@
 [Unit]
 Description=Smuggler {{ tun.name }} Service
 Documentation=https://github.com/vayzur
-After=network-online.target
-Wants=network-online.target
-StartLimitIntervalSec=20
-StartLimitBurst=10
+
+After=network.target nss-lookup.target
+Requires=network.target nss-lookup.target
+
+StartLimitIntervalSec=10s
+StartLimitBurst=100
 
 [Service]
+Type=simple
+
 CPUAccounting=no
 MemoryAccounting=no
 IOAccounting=no
 IPAccounting=no
 TasksAccounting=no
+
 CPUQuota=
 MemoryMax=
+
 CPUSchedulingPolicy=fifo
 CPUSchedulingPriority=98
 IOSchedulingClass=realtime
 IOSchedulingPriority=0
+OOMScoreAdjust=-1000
+
 LimitRTPRIO=99
 LimitRTTIME=infinity
-LimitNPROC=infinity
+LimitCPU=infinity
+LimitFSIZE=infinity
+LimitDATA=infinity
+LimitSTACK=infinity
+LimitCORE=infinity
+LimitRSS=infinity
 LimitNOFILE=infinity
+LimitAS=infinity
+LimitNPROC=infinity
 LimitMEMLOCK=infinity
-OOMScoreAdjust=-1000
-ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+LimitLOCKS=infinity
+LimitSIGPENDING=infinity
+LimitMSGQUEUE=infinity
+
+TimeoutStartSec=3s
+TimeoutStopSec=3s
 Restart=always
-RestartSec=5
-TimeoutStartSec=3
+RestartSec=0ms
+WatchdogSec=0
+
+ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
 
 [Install]
 WantedBy=multi-user.target
