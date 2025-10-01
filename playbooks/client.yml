@@ -11,5 +11,4 @@
     - { role: common, tags: common }
     - { role: sysctl, tags: sysctl }
     - { role: lb, tags: lb, when: lb_enabled }
-    - { role: tc, tags: tc, when: tc_enabled }
     - { role: client, tags: client }

@@ -10,6 +10,5 @@
   roles:
     - { role: common, tags: common }
     - { role: sysctl, tags: sysctl }
-    - { role: lb, tags: lb, when: lb_enabled }
     - { role: server, tags: server }
     - { role: proxy, tags: proxy, when: proxy_enabled }
