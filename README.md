@@ -8,29 +8,10 @@ Smuggler is an Ansible-powered deployment system for building and managing secur
 
 - **Declarative Tunnel Setup** — All configuration is defined in YAML, no manual scripting needed
 - **Multi-Node Architecture** — Support for multiple client and server nodes across distributed environments
-- **Load Balancing (Client & Server Side)** — Choose between `hash`, `random`, or `roundrobin` strategies to distribute traffic
-- **Redundancy & High Availability** — If one server fails, others continue to serve the tunnel
-- **Shared Key Pairs** — A single key pair is shared among all tunnels to support load balancing.
-- **Optional Bandwidth Limiting** — Apply precise rate limits using `htb`, with support for fair queuing via `fq_codel`, `cake`, `fq_pie`, and others.
+- **Load Balancing (Client Side)** — Choose between `hash`, `random`, or `roundrobin` strategies to distribute traffic
 - **SOCKS Proxy via SSH** — Easily proxy traffic over the tunnel using built-in SOCKS5 support
 - **Distributed Design** — Per-node behavior is controlled via inventory configuration
 - **Self-Healing (Upcoming)** — Automatic recovery from failed nodes via dynamic rule updates
-
----
-
-## Architecture Overview
-
-Smuggler can operate in multiple modes depending on your needs:
-
-### 🔹 Mode 1: Single Server (Direct Access)
-- Ideal for personal use
-- Only one server node is deployed
-- Tunnel is directly accessible without client-side load balancing
-
-### 🔹 Mode 2: Client/Server Tunnel (Multi-Node)
-- Multiple client and server nodes
-- Server-side DNS load balancing with DNSTT instances on different ports
-- Client-side load balancing to distribute DNS queries across multiple entry points
 
 ---
 
@@ -45,13 +26,8 @@ inventory/
 │   │   ├── all.yml            # Global settings
 │   │   └── tunnels.yml        # Tunnel definitions
 │   ├── client_nodes/
-│   │   ├── lb.yml             # Client-side load balancing config
-│   │   └── rate.yml           # Client bandwidth throttling
-│   └── server_nodes/
-│       └── lb.yml             # Server-side load balancing config
-├── hosts.yml                  # Node definitions
-├── lb.yml                     # LB-only scenario
-└── single.yml                 # Single-server scenario
+│   │   └── lb.yml             # Client-side load balancing config
+└── hosts.yml                  # Node definitions
 ````
 
 ---
@@ -72,23 +48,23 @@ Each tunnel requires:
 ```yaml
 tunnels:
   - name: t0
-    client_node: lb
+    client_node: lb1
     server_node: node1
     domain: d.domain.tld
     client:
       dns_mode: udp
       dns_resolver: "8.8.8.8:53"
-      bind_addr: 127.0.0.1
-      bind_port: 11885
+      bind_addr: 0.0.0.0
+      bind_port: 7000
     server:
-      bind_addr: "127.0.0.1"
-      bind_port: 5301
+      bind_addr: 0.0.0.0
+      bind_port: 53
       forward_addr: 127.0.0.1
       forward_port: 1080
       mtu: 1232
 ```
 
-> 🔸 **Important**: When using load balancers, client and server tunnel listeners **must bind to `127.0.0.1`** and server ports **must be different from 53** to avoid conflict.
+> 🔸 **Important**: When using load balancing, client listeners **must bind to `127.0.0.1`** to avoid conflict.
 
 ---
 
@@ -169,23 +145,7 @@ lb:
     - "4100-4200"
 ```
 
-### Server Load Balancer:
-
-`group_vars/server_nodes/lb.yml`:
-
-```yaml
-lb_enabled: true
-lb:
-  type: "hash"       # Options: hash, random, roundrobin
-  ports:
-    - "53"
-```
-
 > 🔸 **Client-side load balancer ports** can be any values — Smuggler automatically maps incoming traffic to the correct internal tunnel ports based on `tunnels.yml`.  
-
-> 🔸 **Server-side load balancer ports** must include only `"53"` because DNS queries always target port 53. Smuggler internally handles distribution to the correct tunnel instances. If the list is empty or contains non-53 ports, server-side load balancing will not function.  
-
-> 🔸 Server-side LB only supports UDP (for DNSTT)  
 
 ---
 
