@@ -1,12 +1,17 @@
 ---
-packages:
+packages_debian:
   - curl
-  - wget
-  - vim
-  - htop
   - net-tools
   - dnsutils
   - iproute2
   - openssh-client
   - openssh-server
   - nftables
+
+packages_redhat:
+  - curl
+  - nftables
+  - iproute
+  - bind-utils
+  - openssh
+  - net-tools
