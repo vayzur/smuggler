@@ -127,7 +127,7 @@ all:
 
 ## 🔁 Load Balancing
 
-Enable load balancing by creating `lb.yml` in each node group.
+Enable load balancing by creating `lb.yml` in client nodes group.
 
 ### Client Load Balancer:
 
