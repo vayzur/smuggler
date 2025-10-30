@@ -1,8 +1,16 @@
 ---
-- name: Configure sysctl settings
+- name: Make sysctl.conf.d directory
+  file:
+    path: /etc/sysctl.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Apply sysctl settings
   template:
     src: sysctl.conf.j2
-    dest: /etc/sysctl.conf
+    dest: /etc/sysctl.conf.d/90-smuggler.conf
   changed_when: true
   notify:
     - Reload sysctl
