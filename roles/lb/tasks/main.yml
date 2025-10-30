@@ -1,4 +1,16 @@
 ---
+- name: Install nftables
+  package:
+    name: nftables
+    state: present
+
+- name: Enable nftables
+  systemd:
+    name: nftables
+    enabled: true
+    state: restarted
+    daemon_reload: true
+
 - name: Make nftables.d directory
   file:
     path: /etc/nftables.d
