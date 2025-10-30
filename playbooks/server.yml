@@ -8,7 +8,6 @@
         tuns_length: "{{ tunnels | selectattr('server_node', 'equalto', inventory_hostname) | list | length }}"
       tags: always
   roles:
-    - { role: common, tags: common }
     - { role: sysctl, tags: sysctl }
     - { role: server, tags: server }
     - { role: proxy, tags: proxy, when: proxy_enabled }

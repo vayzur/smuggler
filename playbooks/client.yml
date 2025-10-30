@@ -8,7 +8,6 @@
         tuns_length: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list | length }}"
       tags: always
   roles:
-    - { role: common, tags: common }
     - { role: sysctl, tags: sysctl }
     - { role: lb, tags: lb, when: lb_enabled }
     - { role: client, tags: client }
