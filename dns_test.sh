@@ -88,7 +88,7 @@ for ip in "${DNS_SERVERS[@]}"; do
   success=0
 
   for ((i=1; i<=TRIES; i++)); do
-    output=$(timeout ${TIMEOUT_SEC} dig +nocmd +noall +notcp +stats +time=3 @$ip $TEST_DOMAIN 2>/dev/null)
+    output=$(timeout ${TIMEOUT_SEC} dig +recurse +nocmd +noall +notcp +stats +tries=$TRIES @$ip $TEST_DOMAIN 2>/dev/null)
     query_time=$(echo "$output" | grep -oP 'Query time: \K\d+' || echo "")
 
     if [[ -n "$query_time" ]]; then
