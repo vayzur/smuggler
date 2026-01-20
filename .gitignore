@@ -1,4 +1,3 @@
 inventory/*
-!inventory/single.yml
-!inventory/lb.yml
 !inventory/group_vars
+!inventory/sample.yml
