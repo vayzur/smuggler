@@ -1,0 +1,24 @@
+---
+- name: Copy slipstream-server
+  copy:
+    src: slipstream-server
+    dest: /usr/local/bin/slipstream-server
+    mode: 0755
+
+- name: Install openssl
+  package:
+    name: openssl
+    state: present
+
+- name: Check if slipstream keys exists
+  stat:
+    path: "/tmp/{{ slipstream_privkey }}"
+  register: slipstream_keys
+  delegate_to: localhost
+  run_once: true
+  become: false
+
+- name: Generate slipstream keys if not exists
+  command: >
+    openssl req -x509 -newkey rsa:2048 -nodes -keyout {{ keys_path }}/{{ slipstream_privkey }} -out {{ keys_path }}/{{ slipstream_pubkey }} -days 365 -subj "/CN=slipstream"
+  when: not slipstream_keys.stat.exists

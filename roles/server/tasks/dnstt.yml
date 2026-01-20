@@ -1,0 +1,45 @@
+---
+- name: Copy dnstt-server
+  copy:
+    src: dnstt-server
+    dest: /usr/local/bin/dnstt-server
+    mode: 0755
+  when: "'dnstt' in smuggler_engines"
+
+- name: Copy dnstt-revived-server
+  copy:
+    src: dnstt-revived-server
+    dest: /usr/local/bin/dnstt-revived-server
+    mode: 0755
+  when: "'dnstt-revived' in smuggler_engines"
+
+- name: Check if shared key exists
+  stat:
+    path: "/tmp/{{ dnstt_privkey }}"
+  register: dnstt_keys
+  delegate_to: localhost
+  run_once: true
+  become: false
+
+- name: Generate shared keys if not exists
+  command: >
+    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
+  when: not dnstt_keys.stat.exists
+
+- name: Fetch shared keys to localhost
+  fetch:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | basename }}"
+    flat: true
+  loop:
+    - "{{ keys_path }}/{{ dnstt_privkey }}"
+    - "{{ keys_path }}/{{ dnstt_pubkey }}"
+  when: not dnstt_keys.stat.exists
+  run_once: true
+
+- name: Copy shared privkey to server node
+  copy:
+    src: "/tmp/{{ dnstt_privkey }}"
+    dest: "{{ keys_path }}/{{ dnstt_privkey }}"
+    mode: 0600
+  when: dnstt_keys.stat.exists

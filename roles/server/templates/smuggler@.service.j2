@@ -50,7 +50,18 @@ Restart=always
 RestartSec=0ms
 WatchdogSec=0
 
-ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -privkey-file {{ keys_path }}/{{ shared_privkey }} {{ tun.domain }} {{ tun.server.forward_addr }}:{{ tun.server.forward_port }}
+{% if tun.engine != "slipstream" %}
+{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
+{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %}
+{% endif %}
+
+{% if tun.engine == "slipstream" %}
+ExecStart=/usr/local/bin/slipstream-server --dns-listen-port {{ tun.server.bind_port }} --target-address {{ tun.server.target_addr }}:{{ tun.server.target_port }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }}
+{% elif tun.engine == "dnstt-revived" %}
+ExecStart=/usr/local/bin/dnstt-revived-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -log-level {{ tun.server.loglevel }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr }}:{{ tun.server.target_port }}
+{% else %}
+ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr }}:{{ tun.server.target_port }}
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target

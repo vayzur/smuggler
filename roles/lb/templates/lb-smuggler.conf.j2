@@ -12,8 +12,8 @@ table ip lb {
     chain prerouting {
         type nat hook prerouting priority dstnat; policy accept;
 {% if lb.type == 'hash' %}
-        tcp dport @lb_ports dnat to jhash ip saddr . tcp dport mod {{ tuns_length }} map {
-{% for tun in tuns %}
+        tcp dport @lb_ports dnat to jhash ip saddr . tcp dport mod {{ smuggler_tunnels_length }} map {
+{% for tun in smuggler_tunnels %}
 {% if tun.client.lb | default(true) %}
             {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
 
@@ -21,8 +21,8 @@ table ip lb {
 {% endfor %}
         }
 {% elif lb.type == 'random' %}
-        tcp dport @lb_ports dnat to numgen random mod {{ tuns_length }} map {
-{% for tun in tuns %}
+        tcp dport @lb_ports dnat to numgen random mod {{ smuggler_tunnels_length }} map {
+{% for tun in smuggler_tunnels %}
 {% if tun.client.lb | default(true) %}
             {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
     
@@ -30,8 +30,8 @@ table ip lb {
 {% endfor %}
         }
 {% else %}
-        tcp dport @lb_ports dnat to numgen inc mod {{ tuns_length }} map {
-{% for tun in tuns %}
+        tcp dport @lb_ports dnat to numgen inc mod {{ smuggler_tunnels_length }} map {
+{% for tun in smuggler_tunnels %}
 {% if tun.client.lb | default(true) %}
     {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
     

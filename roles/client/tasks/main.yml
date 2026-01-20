@@ -4,12 +4,28 @@
     src: dnstt-client
     dest: /usr/local/bin/dnstt-client
     mode: 0755
+  when: "'dnstt' in smuggler_engines"
 
-- name: Copy public shared key to client node
+- name: Copy slipstream-client
   copy:
-    src: "/tmp/{{ shared_pubkey }}"
-    dest: "{{ keys_path }}/{{ shared_pubkey }}"
-    mode: "0600"
+    src: slipstream-client
+    dest: /usr/local/bin/slipstream-client
+    mode: 0755
+  when: "'slipstream' in smuggler_engines"
+
+- name: Copy dnstt-revived-client
+  copy:
+    src: dnstt-revived-client
+    dest: /usr/local/bin/dnstt-revived-client
+    mode: 0755
+  when: "'dnstt-revived' in smuggler_engines"
+
+- name: Copy dnstt shared public key to client node
+  copy:
+    src: "/tmp/{{ dnstt_pubkey }}"
+    dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
+    mode: 0600
+  when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
 
 - name: Make systemd unit file for each tunnel
   template:
@@ -18,22 +34,28 @@
     mode: 0644
     owner: root
     group: root
-  loop: "{{ tuns }}"
+  loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
   changed_when: true
+  tags:
+    - client-tunnels
 
 - name: Reload systemd
   systemd:
     daemon_reload: true
   changed_when: true
+  tags:
+    - client-tunnels
 
 - name: Enable and start tunnel services
   systemd:
     name: "smuggler@{{ tun.name }}"
     enabled: true
     state: restarted
-  loop: "{{ tuns }}"
+  loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
   changed_when: true
+  tags:
+    - client-tunnels

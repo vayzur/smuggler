@@ -4,10 +4,16 @@
   pre_tasks:
     - name: Filter tunnels for this host
       set_fact:
-        tuns: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list }}"
-        tuns_length: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list | length }}"
+        smuggler_tunnels: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list }}"
+        smuggler_tunnels_length: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list | length }}"
       tags: always
+
+    - name: Filter engines for this host
+      set_fact:
+        smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list }}"
+      tags: always
+
   roles:
     - { role: sysctl, tags: sysctl }
-    - { role: lb, tags: lb, when: lb_enabled }
+    - { role: lb, tags: lb, when: load_balancer }
     - { role: client, tags: client }

@@ -1,40 +1,9 @@
 ---
-- name: Copy dnstt-server
-  copy:
-    src: dnstt-server
-    dest: /usr/local/bin/dnstt-server
-    mode: 0755
+- import_tasks: dnstt.yml
+  when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
 
-- name: Check if shared key exists
-  stat:
-    path: "/tmp/{{ shared_privkey }}"
-  register: shared_keys
-  delegate_to: localhost
-  run_once: true
-  become: false
-
-- name: Generate shared keys if not exists
-  command: >
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ shared_privkey }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }}
-  when: not shared_keys.stat.exists
-
-- name: Fetch shared keys to localhost
-  fetch:
-    src: "{{ item }}"
-    dest: "/tmp/{{ item | basename }}"
-    flat: true
-  loop:
-    - "{{ keys_path }}/{{ shared_privkey }}"
-    - "{{ keys_path }}/{{ shared_pubkey }}"
-  when: not shared_keys.stat.exists
-  run_once: true
-
-- name: Copy shared privkey to server node
-  copy:
-    src: "/tmp/{{ shared_privkey }}"
-    dest: "{{ keys_path }}/{{ shared_privkey }}"
-    mode: 0600
-  when: shared_keys.stat.exists
+- import_tasks: slipstream.yml
+  when: smuggler_engines | intersect(['slipstream']) | length > 0
 
 - name: Make systemd unit file for each tunnel
   template:
@@ -43,22 +12,28 @@
     mode: 0644
     owner: root
     group: root
-  loop: "{{ tuns }}"
+  loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
   changed_when: true
+  tags:
+    - server-tunnels
 
 - name: Reload systemd
   systemd:
     daemon_reload: true
   changed_when: true
+  tags:
+    - server-tunnels
 
 - name: Enable and start tunnel services
   systemd:
     name: "smuggler@{{ tun.name }}"
     enabled: true
     state: restarted
-  loop: "{{ tuns }}"
+  loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
   changed_when: true
+  tags:
+    - server-tunnels

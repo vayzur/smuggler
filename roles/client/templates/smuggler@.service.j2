@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Smuggler {{ tun.name }} Service
+Description=Smuggler {{ tun.name }} service
 Documentation=https://github.com/vayzur
 
 After=network.target nss-lookup.target
@@ -50,7 +50,18 @@ Restart=always
 RestartSec=0ms
 WatchdogSec=0
 
-ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ shared_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+{% if tun.engine != "slipstream" %}
+{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
+{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %}
+{% endif %}
+
+{% if tun.engine == "slipstream" %}
+ExecStart=/usr/local/bin/slipstream-client --tcp-listen-port {{ tun.client.bind_port }} --resolver {{ tun.client.dns_resolver }} --domain {{ tun.domain }} --keep-alive-interval {{ tun.client.keep_alive_interval }}
+{% elif tun.engine == "dnstt-revived" %}
+ExecStart=/usr/local/bin/dnstt-revived-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -log-level {{ tun.client.loglevel }} -max-num-labels {{ tun.client.max_num_labels }} -max-qname-len {{ tun.client.max_qname_len }} -rps {{ tun.client.rps }} -udp-workers {{ tun.client.udp_workers }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+{% else %}
+ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_mode }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target

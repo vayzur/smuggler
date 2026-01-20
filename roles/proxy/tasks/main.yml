@@ -6,7 +6,7 @@
     mode: 0644
     owner: root
     group: root
-  loop: "{{ tuns | subelements('server.proxy', skip_missing=True) }}"
+  loop: "{{ smuggler_tunnels | subelements('server.proxy', skip_missing=True) }}"
   register: units_result
   
 - name: Reload systemd
@@ -19,4 +19,4 @@
     name: "proxy@{{ item.0.name }}-{{ item.1.name }}.service"
     enabled: true
     state: restarted
-  loop: "{{ tuns | subelements('server.proxy', skip_missing=True) }}"
+  loop: "{{ smuggler_tunnels | subelements('server.proxy', skip_missing=True) }}"

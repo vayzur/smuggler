@@ -1,0 +1,11 @@
+---
+keys_path: "/opt"
+
+dnstt_pubkey: "dnstt.pub"
+dnstt_privkey: "dnstt.key"
+
+dnstt_GOGC: "10"
+dnstt_GOMEMLIMIT: "512MiB"
+
+slipstream_pubkey: "slipstream.pub"
+slipstream_privkey: "slipstream.key"

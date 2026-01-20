@@ -1,2 +1,2 @@
 ---
-lb_enabled: false
+load_balancer: false
