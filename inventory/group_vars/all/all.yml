@@ -1,5 +1,0 @@
----
-keys_path: "/opt"
-
-shared_privkey: "smuggler.key"
-shared_pubkey: "smuggler.pub"
