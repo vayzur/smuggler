@@ -1,0 +1,55 @@
+---
+tunnels:
+  - name: tun0
+    client_node: lb0
+    server_node: node0
+    engine: dnstt
+    domain: d.domain.tld
+    client:
+      dns_mode: udp
+      dns_resolver: "1.1.1.1:53"
+      bind_addr: 0.0.0.0
+      bind_port: 2052
+    server:
+      bind_addr: "{{ ansible_default_ipv4.address }}"
+      bind_port: 53
+      target_addr: 127.0.0.1
+      target_port: 2052
+      mtu: 493
+
+  - name: tun1
+    client_node: lb0
+    server_node: node0
+    engine: slipstream
+    domain: d.domain.tld
+    client:
+      dns_resolver: "1.1.1.1:53"
+      bind_port: 2052
+      keep_alive_interval: 200
+    server:
+      bind_port: 53
+      target_addr: 127.0.0.1
+      target_port: 2052
+
+  - name: tun2
+    client_node: lb0
+    server_node: node0
+    engine: dnstt-revived
+    domain: d.domain.tld
+    client:
+      dns_mode: udp
+      dns_resolver: "1.1.1.1:53"
+      bind_addr: 0.0.0.0
+      bind_port: 2052
+      max_num_labels: 2
+      max_qname_len: 101
+      rps: 0
+      udp_workers: 100
+      loglevel: "warning"
+    server:
+      bind_addr: "{{ ansible_default_ipv4.address }}"
+      bind_port: 53
+      target_addr: 127.0.0.1
+      target_port: 2052
+      mtu: 493
+      loglevel: "warning"
