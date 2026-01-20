@@ -1,3 +1,7 @@
 inventory/*
 !inventory/group_vars
 !inventory/sample.yml
+roles/server/files/dnstt*
+roles/server/files/slipstream-server
+roles/client/files/dnstt*
+roles/client/files/slipstream-client
