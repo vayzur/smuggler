@@ -1,14 +1,14 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Smuggler {{ tun.name }} Service
+Description=Smuggler {{ tun.name }} service
 Documentation=https://github.com/vayzur
 
-After=network.target nss-lookup.target
-Requires=network.target nss-lookup.target
+After=network-online.target
+Requires=network-online.target
 
-StartLimitIntervalSec=10s
-StartLimitBurst=100
+StartLimitIntervalSec=0
+StartLimitBurst=0
 
 [Service]
 Type=simple
@@ -22,11 +22,8 @@ TasksAccounting=no
 CPUQuota=
 MemoryMax=
 
-CPUSchedulingPolicy=fifo
-CPUSchedulingPriority=98
-IOSchedulingClass=realtime
-IOSchedulingPriority=0
 OOMScoreAdjust=-1000
+WatchdogSec=0
 
 LimitRTPRIO=99
 LimitRTTIME=infinity
@@ -47,8 +44,7 @@ LimitMSGQUEUE=infinity
 TimeoutStartSec=3s
 TimeoutStopSec=3s
 Restart=always
-RestartSec=0ms
-WatchdogSec=0
+RestartSec=1s
 
 {% if tun.engine != "slipstream" %}
 {% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
