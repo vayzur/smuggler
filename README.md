@@ -71,20 +71,23 @@ Map your servers. You can have multiple `server_nodes` and `client_nodes` (Load 
 ```yaml
 all:
   vars:
+    ansible_port: 3022
     ansible_user: root
+
   hosts:
-    srv-01:
-      ansible_host: 1.2.3.4
-    client-lb:
-      ansible_host: 5.6.7.8
+    node0:
+      ansible_host: node0.domain.tld
+    lb0:
+      ansible_host: lb0.domain.tld
 
   children:
     server_nodes:
       hosts:
-        srv-01:
+        node0:
+
     client_nodes:
       hosts:
-        client-lb:
+        lb0:
 
 ```
 
@@ -97,28 +100,58 @@ The tunnel DSL (Domain Specific Language) allows you to mix and match engines. E
 ```yaml
 tunnels:
   - name: tun0
-    client_node: client-lb
-    server_node: srv-01
+    client_node: lb0
+    server_node: node0
     engine: dnstt
-    domain: d1.yourdomain.com
+    domain: d.domain.tld
+    client:
+      dns_mode: udp
+      dns_resolver: "1.1.1.1:53"
+      bind_addr: 0.0.0.0
+      bind_port: 2052
+    server:
+      bind_addr: "{{ ansible_default_ipv4.address }}"
+      bind_port: 53
+      target_addr: 127.0.0.1
+      target_port: 2052 # Port where the traffic finally lands
+      mtu: 493
+
+  - name: tun1
+    client_node: lb0
+    server_node: node0
+    engine: slipstream
+    domain: d.domain.tld
     client:
       dns_resolver: "1.1.1.1:53"
       bind_port: 2052
+      keep_alive_interval: 200
     server:
       bind_port: 53
-      target_port: 2052  # Port where the traffic finally lands
+      target_addr: 127.0.0.1
+      target_port: 2052
 
-  - name: tun1
-    client_node: client-lb
-    server_node: srv-01
-    engine: slipstream
-    domain: d2.yourdomain.com
+  - name: tun2
+    client_node: lb0
+    server_node: node0
+    engine: dnstt-revived
+    domain: d.domain.tld
     client:
-      dns_resolver: "8.8.8.8:53"
-      bind_port: 2053
+      dns_mode: udp
+      dns_resolver: "1.1.1.1:53"
+      bind_addr: 0.0.0.0
+      bind_port: 2052
+      max_num_labels: 2
+      max_qname_len: 101
+      rps: 0
+      udp_workers: 100
+      loglevel: "warning"
     server:
+      bind_addr: "{{ ansible_default_ipv4.address }}"
       bind_port: 53
-      target_port: 2053
+      target_addr: 127.0.0.1
+      target_port: 2052
+      mtu: 493
+      loglevel: "warning"
 
 ```
 
