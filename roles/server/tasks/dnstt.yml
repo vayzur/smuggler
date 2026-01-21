@@ -22,8 +22,8 @@
   become: false
 
 - name: Generate shared keys if not exists
-  command: >
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
+  shell: |
+    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
   when: not dnstt_keys.stat.exists
 
 - name: Fetch shared keys to localhost
