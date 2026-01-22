@@ -1,0 +1,6 @@
+#!/bin/bash
+
+PROXY="${1:?Proxy not specified}"
+URL="${2:-http://www.google.com/gen_204}"
+
+curl -x "$PROXY" --connect-timeout {{ tun.client.health_check_connect_timeout }} --max-time {{ tun.client.health_check_max_time }} -s -o /dev/null "$URL"
