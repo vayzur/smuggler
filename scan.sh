@@ -5,7 +5,7 @@
 # Usage: ./scan.sh <resolvers_file> <domain> <pubkey> <listen_addr> <proxy> <timeout>
 #
 # Example:
-#   ./scan.sh resolvers.txt t.example.com "publickey" 127.0.0.1:7300 http://127.0.0.1:7300 5
+#   ./scan.sh resolvers.txt t.example.com "pubkey" 127.0.0.1:7300 http://127.0.0.1:7300 5
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
