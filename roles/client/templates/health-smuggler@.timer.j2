@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Run Health Check for Smuggler Instance {{ tun.name }} every 5s
+
+[Timer]
+OnUnitActiveSec=5s
+AccuracySec=50ms
+Unit=health-smuggler@{{ tun.name }}.service
+
+[Install]
+WantedBy=timers.target

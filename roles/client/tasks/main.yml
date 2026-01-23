@@ -27,7 +27,52 @@
     mode: 0600
   when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
 
-- name: Make systemd unit file for each tunnel
+- name: Make health check script for each tunnel
+  template:
+    src: health-smuggler.sh.j2
+    dest: "/opt/health-smuggler-{{ tun.name }}.sh"
+    mode: 0755
+    owner: root
+    group: root
+  loop: "{{ smuggler_tunnels }}"
+  loop_control:
+    loop_var: tun
+  when: tun.client.health_check | default(false) | bool
+  changed_when: true
+  tags:
+    - client-health-check
+
+- name: Make health check service for each tunnel
+  template:
+    src: health@.service.j2
+    dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.service"
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ smuggler_tunnels }}"
+  loop_control:
+    loop_var: tun
+  when: tun.client.health_check | default(false) | bool
+  changed_when: true
+  tags:
+    - client-health-check
+
+- name: Make health check timer for each tunnel
+  template:
+    src: health@.timer.j2
+    dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.timer"
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ smuggler_tunnels }}"
+  loop_control:
+    loop_var: tun
+  when: tun.client.health_check | default(false) | bool
+  changed_when: true
+  tags:
+    - client-health-check
+
+- name: Make systemd service for each tunnel
   template:
     src: smuggler@.service.j2
     dest: "/etc/systemd/system/smuggler@{{ tun.name }}.service"
@@ -47,6 +92,7 @@
   changed_when: true
   tags:
     - client-tunnels
+    - client-health-check
 
 - name: Enable and start tunnel services
   systemd:
@@ -59,3 +105,16 @@
   changed_when: true
   tags:
     - client-tunnels
+
+- name: Enable and start health check timers
+  systemd:
+    name: "health-smuggler@{{ tun.name }}.timer"
+    enabled: true
+    state: restarted
+  loop: "{{ smuggler_tunnels }}"
+  loop_control:
+    loop_var: tun
+  when: tun.client.health_check | default(false) | bool
+  changed_when: true
+  tags:
+    - client-health-check

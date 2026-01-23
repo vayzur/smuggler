@@ -105,6 +105,12 @@ tunnels:
     engine: dnstt
     domain: d.domain.tld
     client:
+      health_check: false # Requires a local proxy to check End-to-End connection
+      health_check_proxy_type: http
+      health_check_proxy_addr: 127.0.0.1
+      health_check_proxy_port: 10001
+      health_check_max_time: 5
+      health_check_connect_timeout: 3
       dns_mode: udp
       dns_resolver: "1.1.1.1:53"
       bind_addr: 0.0.0.0
@@ -122,6 +128,12 @@ tunnels:
     engine: slipstream
     domain: d.domain.tld
     client:
+      health_check: false # Requires a local proxy to check End-to-End connection
+      health_check_proxy_type: http
+      health_check_proxy_addr: 127.0.0.1
+      health_check_proxy_port: 10002
+      health_check_max_time: 5
+      health_check_connect_timeout: 3
       dns_resolver: "1.1.1.1:53"
       bind_port: 2052
       keep_alive_interval: 200
@@ -136,6 +148,12 @@ tunnels:
     engine: dnstt-revived
     domain: d.domain.tld
     client:
+      health_check: false # Requires a local proxy to check End-to-End connection
+      health_check_proxy_type: http
+      health_check_proxy_addr: 127.0.0.1
+      health_check_proxy_port: 10003
+      health_check_max_time: 5
+      health_check_connect_timeout: 3
       dns_mode: udp
       dns_resolver: "1.1.1.1:53"
       bind_addr: 0.0.0.0
