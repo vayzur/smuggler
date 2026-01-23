@@ -52,7 +52,7 @@ RestartSec=1s
 {% endif %}
 
 {% if tun.engine == "slipstream" %}
-ExecStart=/usr/local/bin/slipstream-server --dns-listen-port {{ tun.server.bind_port }} --target-address {{ tun.server.target_addr }}:{{ tun.server.target_port }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }}
+ExecStart=/usr/local/bin/slipstream-server --dns-listen-host {{ tun.server.bind_addr }} --dns-listen-port {{ tun.server.bind_port }} --target-address {{ tun.server.target_addr }}:{{ tun.server.target_port }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }} --max-connections {{ tun.server.max_connections }}
 {% elif tun.engine == "dnstt-revived" %}
 ExecStart=/usr/local/bin/dnstt-revived-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -log-level {{ tun.server.loglevel }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr }}:{{ tun.server.target_port }}
 {% else %}
