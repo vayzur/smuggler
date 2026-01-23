@@ -40,7 +40,7 @@
   when: tun.client.health_check | default(false) | bool
   changed_when: true
   tags:
-    - client-tunnels
+    - client-health-check
 
 - name: Make health check service for each tunnel
   template:
@@ -55,7 +55,7 @@
   when: tun.client.health_check | default(false) | bool
   changed_when: true
   tags:
-    - client-tunnels
+    - client-health-check
 
 - name: Make health check timer for each tunnel
   template:
@@ -70,7 +70,7 @@
   when: tun.client.health_check | default(false) | bool
   changed_when: true
   tags:
-    - client-tunnels
+    - client-health-check
 
 - name: Make systemd service for each tunnel
   template:
@@ -92,6 +92,7 @@
   changed_when: true
   tags:
     - client-tunnels
+    - client-health-check
 
 - name: Enable and start tunnel services
   systemd:
@@ -116,4 +117,4 @@
   when: tun.client.health_check | default(false) | bool
   changed_when: true
   tags:
-    - client-tunnels
+    - client-health-check
