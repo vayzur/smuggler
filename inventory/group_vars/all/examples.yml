@@ -36,12 +36,16 @@ tunnels:
       health_check_max_time: 5
       health_check_connect_timeout: 3
       dns_resolver: "1.1.1.1:53"
+      bind_addr: 0.0.0.0
       bind_port: 2052
       keep_alive_interval: 200
     server:
+      bind_addr: "{{ ansible_default_ipv4.address }}"
       bind_port: 53
       target_addr: 127.0.0.1
       target_port: 2052
+      max_connections: 256
+      
 
   - name: tun2
     client_node: lb0
