@@ -27,7 +27,8 @@ example:
   $0 resolvers.txt t.example.com "305318d872..." 127.0.0.1:7300 http://127.0.0.1:7300 5
 
 output:
-  alive.txt - list of working resolvers
+  healthy.txt - list of working resolvers
+  unhealthy.txt - list of not working resolvers
 EOF
 }
 
@@ -36,7 +37,8 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
   exit 0
 fi
 
-alive_file="alive.txt"
+healthy_file="healthy.txt"
+unhealthy_file="unhealthy.txt"
 resolvers_path="${1:?resolver path is required}"
 domain="${2:?domain is required}"
 pubkey="${3:?dnstt public key is required}"
@@ -69,14 +71,15 @@ command -v dnstt-client >/dev/null 2>&1 || {
 
 echo -e "\ndomain: ${domain}\npubkey: ${pubkey}\nlisten address: ${listen_address}\nproxy: ${proxy}\ntimeout: ${timeout}\n\n"
 
-: > "$alive_file"
+: > "$healthy_file"
+: > "$unhealthy_file"
 
 while read -r addr; do
   [[ -z "$addr" ]] && continue
 
   dnstt-client -udp "${addr}" -pubkey "$pubkey" "$domain" "$listen_address" >/dev/null 2>&1 &
 
-  slip_pid=$!
+  dnstt_pid=$!
 
   sleep 1
 
@@ -88,14 +91,15 @@ while read -r addr; do
 
   curl_status=$?
 
-  kill -9 "$slip_pid" 2>/dev/null
-  wait "$slip_pid" 2>/dev/null
+  kill -9 "$dnstt_pid" 2>/dev/null
+  wait "$dnstt_pid" 2>/dev/null
 
   if [[ "$curl_status" -eq 0 ]]; then
-    echo -e "${GREEN}[+] alive:${NC} $addr"
-    echo "$addr" >> "$alive_file"
+    echo -e "${GREEN}[+] healthy:${NC} $addr"
+    echo "$addr" >> "$healthy_file"
   else
-    echo -e "${RED}[-] dead:${NC} $addr"
+    echo -e "${RED}[-] unhealthy:${NC} $addr"
+    echo "$addr" >> "$unhealthy_file"
   fi
 
 done < "$resolvers_path"
