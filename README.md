@@ -325,9 +325,11 @@ tunnels:
       health_check_proxy_type: http
       health_check_proxy_addr: 127.0.0.1
       health_check_proxy_port: 8080
-      health_check_max_time: 5
-      health_check_connect_timeout: 3
-      dns_resolver: "1.1.1.1:53"
+      health_check_timeout: 5
+      dns_resolver: 
+        - "1.1.1.1:53"
+        - "8.8.8.8:53"
+        - "9.9.9.9:53"
       bind_addr: 0.0.0.0
       bind_port: 8080
       keep_alive_interval: 200
@@ -349,9 +351,8 @@ tunnels:
       health_check_proxy_type: socks5
       health_check_proxy_addr: 127.0.0.1
       health_check_proxy_port: 1080
-      health_check_max_time: 10
-      health_check_connect_timeout: 5
-      dns_mode: udp
+      health_check_timeout: 10
+      dns_protocol: udp           # udp, doh, dot
       dns_resolver: "8.8.8.8:53"
       bind_addr: 0.0.0.0
       bind_port: 1080
@@ -376,7 +377,7 @@ tunnels:
     domain: backup.example.com
     client:
       health_check: false
-      dns_mode: udp
+      dns_protocol: udp
       dns_resolver: "9.9.9.9:53"
       bind_addr: 127.0.0.1        # Only local connections
       bind_port: 9090
@@ -409,8 +410,7 @@ tunnels:
 | `health_check_proxy_type` | string | Proxy protocol (`http`/`socks5`) | `http` |
 | `health_check_proxy_addr` | IP | Health check target address | `127.0.0.1` |
 | `health_check_proxy_port` | port | Health check target port | Required if enabled |
-| `health_check_max_time` | seconds | Maximum time for health check | `5` |
-| `health_check_connect_timeout` | seconds | Connection timeout | `3` |
+| `health_check_timeout` | seconds | Connection timeout | `5` |
 
 #### Server Parameters
 | Parameter | Type | Description | Default |
@@ -425,7 +425,7 @@ tunnels:
 **dnstt / dnstt-revived:**
 | Parameter | Description | Typical Value |
 |-----------|-------------|---------------|
-| `dns_mode` | Transport mode | `udp`, `doh`, `dot` |
+| `dns_protocol` | Transport protocol | `udp`, `doh`, `dot` |
 | `mtu` | Maximum transmission unit | `493` (safe default) |
 | `max_qname_len` | Max DNS query name length | `101` (bypass filters) |
 | `max_num_labels` | Max DNS labels per query | `2` (bypass NXDOMAIN) |
@@ -456,14 +456,26 @@ Distribute traffic across multiple tunnels using kernel-level nftables.
 
 ```yaml
 ---
-load_balancer: true
+load_balancing: false
 
 lb:
-  type: "roundrobin"              # Options: hash, random, roundrobin
+  type: "hash" ## Options: hash, random, roundrobin
   ports:
-    - "8080"                      # Single port
-    - "4100-4200"                 # Port range
-    - "> 10000"                   # All ports above 10000
+    - "80"
+    - "8080"
+    - "8880"
+    - "2052"
+    - "2082"
+    - "2086"
+    - "2095"
+    - "443"
+    - "2053"
+    - "2083"
+    - "2087"
+    - "2096"
+    - "8443"
+    - "9200-9400"
+    - "10000-10200"
 ```
 
 **Load Balancing Types:**
@@ -628,10 +640,9 @@ Health checks verify that tunnels are fully operational by testing connectivity 
 client:
   health_check: true                          # Enable health monitoring
   health_check_proxy_type: http               # 'http' or 'socks5'
-  health_check_proxy_addr: 127.0.0.1          # Proxy address on server
-  health_check_proxy_port: 8080               # Proxy port
-  health_check_max_time: 5                    # Max time in seconds
-  health_check_connect_timeout: 3             # Connection timeout
+  health_check_proxy_addr: 127.0.0.1          # Local proxy address
+  health_check_proxy_port: 8080               # Local proxy port
+  health_check_timeout: 5                     # Connection timeout
 ```
 
 **Requirements:**
