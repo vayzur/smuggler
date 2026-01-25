@@ -9,36 +9,24 @@ table ip lb {
         elements = { {{ lb.ports | join(', ') }} }
     }
 
+    map lb_backends {
+        typeof meta mark : ip daddr . tcp dport
+        flags dynamic
+        elements = { {% for tun in smuggler_tunnels %}{% if tun.client.lb | default(true) %}{{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %} }
+    }
+
     chain prerouting {
         type nat hook prerouting priority dstnat; policy accept;
-{% if lb.type == 'hash' %}
-        tcp dport @lb_ports dnat to jhash ip saddr . tcp dport mod {{ smuggler_tunnels_length }} map {
-{% for tun in smuggler_tunnels %}
-{% if tun.client.lb | default(true) %}
-            {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
 
-{% endif %}
-{% endfor %}
-        }
+{% if lb.type == 'hash' %}
+        meta mark set jhash ip saddr . tcp sport mod {{ smuggler_tunnels_length }}
 {% elif lb.type == 'random' %}
-        tcp dport @lb_ports dnat to numgen random mod {{ smuggler_tunnels_length }} map {
-{% for tun in smuggler_tunnels %}
-{% if tun.client.lb | default(true) %}
-            {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
-    
-{% endif %}
-{% endfor %}
-        }
+        meta mark set numgen random mod {{ smuggler_tunnels_length }}
 {% else %}
-        tcp dport @lb_ports dnat to numgen inc mod {{ smuggler_tunnels_length }} map {
-{% for tun in smuggler_tunnels %}
-{% if tun.client.lb | default(true) %}
-    {{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}
-    
+        meta mark set numgen inc mod {{ smuggler_tunnels_length }}
 {% endif %}
-{% endfor %}
-        }
-{% endif %}
+
+        tcp dport @lb_ports dnat to meta mark map @lb_backends
     }
 
     chain postrouting {

@@ -4,13 +4,6 @@
     name: nftables
     state: present
 
-- name: Enable nftables
-  systemd:
-    name: nftables
-    enabled: true
-    state: restarted
-    daemon_reload: true
-
 - name: Make nftables.d directory
   file:
     path: /etc/nftables.d
@@ -19,14 +12,18 @@
     group: root
     mode: 0755
 
-- name: Make load balacner config
+- name: Deploy smuggler load balancing config
   template:
     src: "lb-smuggler.conf.j2"
     dest: /etc/nftables.d/lb-smuggler.conf
     mode: 0644
   changed_when: true
+  tags:
+    - lb-config
+  notify:
+    - Reload lb
 
-- name: Make smuggler load balancing service
+- name: Deploy smuggler load balancing service
   template:
     src: lb-smuggler.service.j2
     dest: "/etc/systemd/system/lb-smuggler.service"

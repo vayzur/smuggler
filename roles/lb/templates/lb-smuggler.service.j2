@@ -1,7 +1,6 @@
 [Unit]
-Description=Smuggler nftables rules for load balancing
-After=network.target nftables.service
-Requires=nftables.service
+Description=Smuggler load balancing service
+After=network.target
 
 [Service]
 Type=oneshot
