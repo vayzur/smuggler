@@ -1,12 +1,11 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Health Check for Smuggler Instance {{ tun.name }}
+Description=Smuggler Health Check Service for Instance {{ tun.name }}
 Documentation=https://github.com/vayzur
 StartLimitIntervalSec=0
 StartLimitBurst=0
 
 [Service]
 Type=oneshot
-ExecStart=/opt/health-smuggler-{{ tun.name }}.sh {{ tun.client.health_check_proxy_type }}://{{ tun.client.health_check_proxy_addr }}:{{ tun.client.health_check_proxy_port }}
-ExecStopPost=/bin/sh -c 'if [ "$EXIT_STATUS" != "0" ]; then systemctl restart smuggler@{{ tun.name }}.service; fi'
+ExecStart=/opt/health-smuggler.sh {{ tun.name }} {{ tun.client.health_check_proxy_type }}://{{ tun.client.health_check_proxy_addr }}:{{ tun.client.health_check_proxy_port }} {{ tun.client.health_check_url | default('http://www.google.com/gen_204') }} {{ tun.client.health_check_timeout }} {{ tun.client.lb | default(false) | lower }} {{ tun_idx }} {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} {{ tun.client.bind_port }}
