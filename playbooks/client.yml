@@ -15,5 +15,5 @@
 
   roles:
     - { role: sysctl, tags: sysctl }
-    - { role: lb, tags: lb, when: load_balancer }
+    - { role: lb, tags: lb, when: load_balancing }
     - { role: client, tags: client }
