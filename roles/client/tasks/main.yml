@@ -34,7 +34,6 @@
     mode: 0755
     owner: root
     group: root
-  changed_when: true
   tags:
     - client-health-check
 
@@ -50,7 +49,6 @@
     loop_var: tun
     index_var: tun_idx
   when: tun.client.health_check | default(false) | bool
-  changed_when: true
   tags:
     - client-health-check
 
@@ -65,7 +63,6 @@
   loop_control:
     loop_var: tun
   when: tun.client.health_check | default(false) | bool
-  changed_when: true
   tags:
     - client-health-check
 
@@ -79,7 +76,6 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  changed_when: true
   tags:
     - client-tunnels
 
@@ -99,7 +95,6 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  changed_when: true
   tags:
     - client-tunnels
 
@@ -112,6 +107,5 @@
   loop_control:
     loop_var: tun
   when: tun.client.health_check | default(false) | bool
-  changed_when: true
   tags:
     - client-health-check

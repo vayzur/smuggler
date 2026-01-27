@@ -15,7 +15,6 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  changed_when: true
   tags:
     - server-tunnels
 
@@ -34,6 +33,5 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  changed_when: true
   tags:
     - server-tunnels
