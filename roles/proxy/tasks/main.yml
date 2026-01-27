@@ -1,4 +1,66 @@
 ---
+- name: Generate ssh keys on control node
+  delegate_to: localhost
+  run_once: true
+  become: false
+  command: >
+    ssh-keygen -t ed25519 -f {{ ssh_privkey_path }} -N "" -q
+  args:
+    creates: "{{ ssh_privkey_path }}"
+
+- name: Read private key from control node
+  delegate_to: localhost
+  run_once: true
+  become: false
+  slurp:
+    src: "{{ ssh_privkey_path }}"
+  register: private_key_b64
+
+- name: Read public key from control node
+  delegate_to: localhost
+  run_once: true
+  become: false
+  slurp:
+    src: "{{ ssh_privkey_path }}.pub"
+  register: public_key_b64
+
+- name: Set ssh keys as facts
+  set_fact:
+    private_key: "{{ private_key_b64.content | b64decode }}"
+    public_key: "{{ public_key_b64.content | b64decode }}"
+
+- name: Ensure .ssh directory exists
+  file:
+    path: "{{ ansible_user_dir }}/.ssh"
+    state: directory
+    mode: 0700
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Deploy private key
+  copy:
+    content: "{{ private_key }}"
+    dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600
+    backup: true
+
+- name: Deploy public key
+  copy:
+    content: "{{ public_key }}"
+    dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}.pub"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0644
+    backup: true
+
+- name: Add public key to authorized_keys
+  authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ public_key }}"
+    state: present
+
 - name: Make systemd unit file for each proxy
   template:
     src: proxy@.service.j2
@@ -8,11 +70,15 @@
     group: root
   loop: "{{ smuggler_tunnels | subelements('server.proxy', skip_missing=True) }}"
   register: units_result
+  tags:
+    - proxy-services
   
 - name: Reload systemd
   systemd:
     daemon_reload: true
   when: units_result.changed
+  tags:
+    - proxy-services
 
 - name: Enable and start proxy services
   systemd:
@@ -20,3 +86,5 @@
     enabled: true
     state: restarted
   loop: "{{ smuggler_tunnels | subelements('server.proxy', skip_missing=True) }}"
+  tags:
+    - proxy-services

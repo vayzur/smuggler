@@ -3,31 +3,19 @@ Description=Smuggler SSH proxy for {{ item.0.name }}-{{ item.1.name }}
 Documentation=https://github.com/vayzur
 After=network-online.target
 Wants=network-online.target
-StartLimitIntervalSec=20
-StartLimitBurst=10
+StartLimitIntervalSec=0
+StartLimitBurst=0
 
 [Service]
-CPUAccounting=no
-MemoryAccounting=no
-IOAccounting=no
-IPAccounting=no
-TasksAccounting=no
-CPUQuota=
-MemoryMax=
-CPUSchedulingPolicy=fifo
-CPUSchedulingPriority=98
-IOSchedulingClass=realtime
-IOSchedulingPriority=0
-LimitRTPRIO=99
-LimitRTTIME=infinity
-LimitNPROC=infinity
-LimitNOFILE=infinity
-LimitMEMLOCK=infinity
+Type=simple
 OOMScoreAdjust=-1000
-ExecStart=/usr/bin/ssh -T -N -D {{ item.0.server.forward_addr }}:{{ item.0.server.forward_port }} -o NoHostAuthenticationForLocalhost=yes {{ item.1.remote_host }} -p {{ item.1.remote_port }}
-Restart=always
-RestartSec=5
+
 TimeoutStartSec=3
+TimeoutStopSec=3
+Restart=always
+RestartSec=1
+
+ExecStart=/usr/bin/ssh -T -N -D {{ item.0.server.target_addr }}:{{ item.0.server.target_port }} -o NoHostAuthenticationForLocalhost=yes {{ item.1.remote_host }} -p {{ item.1.remote_port }} -i {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}
 
 [Install]
 WantedBy=multi-user.target

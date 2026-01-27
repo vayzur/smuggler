@@ -16,4 +16,4 @@
   roles:
     - { role: sysctl, tags: sysctl }
     - { role: server, tags: server }
-    - { role: proxy, tags: proxy, when: proxy_enabled }
+    - { role: proxy, tags: proxy, when: ssh_proxy }
