@@ -22,6 +22,10 @@ tunnels:
       target_addr: 127.0.0.1
       target_port: 2052
       mtu: 493
+      # proxy:
+      #   - name: p1
+      #     remote_host: 127.0.0.1
+      #     remote_port: 22
 
   - name: tun1
     client_node: lb0
@@ -48,6 +52,10 @@ tunnels:
       target_addr: 127.0.0.1
       target_port: 2052
       max_connections: 256
+      # proxy:
+      #   - name: p1
+      #     remote_host: 127.0.0.1
+      #     remote_port: 22
 
   - name: tun2
     client_node: lb0
@@ -77,3 +85,7 @@ tunnels:
       target_port: 2052
       mtu: 493
       loglevel: "warning"
+      # proxy:
+      #   - name: p1
+      #     remote_host: 127.0.0.1
+      #     remote_port: 22
