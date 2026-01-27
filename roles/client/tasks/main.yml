@@ -5,6 +5,8 @@
     dest: /usr/local/bin/dnstt-client
     mode: 0755
   when: "'dnstt' in smuggler_engines"
+  tags:
+    - dnstt-client-binary
 
 - name: Copy slipstream-client
   copy:
@@ -12,6 +14,8 @@
     dest: /usr/local/bin/slipstream-client
     mode: 0755
   when: "'slipstream' in smuggler_engines"
+  tags:
+    - slipstream-client-binary
 
 - name: Copy dnstt-revived-client
   copy:
@@ -19,6 +23,8 @@
     dest: /usr/local/bin/dnstt-revived-client
     mode: 0755
   when: "'dnstt-revived' in smuggler_engines"
+  tags:
+    - dnstt-revived-client-binary
 
 - name: Copy dnstt shared public key to client node
   copy:

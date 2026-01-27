@@ -5,6 +5,8 @@
     dest: /usr/local/bin/dnstt-server
     mode: 0755
   when: "'dnstt' in smuggler_engines"
+  tags:
+    - dnstt-server-binary
 
 - name: Copy dnstt-revived-server
   copy:
@@ -12,6 +14,8 @@
     dest: /usr/local/bin/dnstt-revived-server
     mode: 0755
   when: "'dnstt-revived' in smuggler_engines"
+  tags:
+    - dnstt-revived-server-binary
 
 - name: Check if shared key exists
   stat:
