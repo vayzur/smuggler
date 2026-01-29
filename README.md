@@ -508,6 +508,12 @@ lb:
 | `random` | Random distribution | Simple load spreading |
 | `roundrobin` | Sequential distribution | Even distribution, default choice |
 
+> [!WARNING]
+> If you want to use client-side load balancing, all server-side proxies must be consistent across every server.
+You cannot run Shadowsocks on one server and an SSH SOCKS proxy on another and still expect client-side load balancing to work correctly.
+All servers must expose the same type of proxy and behave identically.
+In practice, load balancing fundamentally relies on consistency.
+
 ---
 
 ### 4. DNS Configuration
