@@ -321,11 +321,17 @@ tunnels:
     engine: slipstream
     domain: fast.example.com
     client:
-      health_check: true
-      health_check_proxy_type: http
-      health_check_proxy_addr: 127.0.0.1
-      health_check_proxy_port: 8080
-      health_check_timeout: 5
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: false # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10001
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_resolver: 
         - "1.1.1.1:53"
         - "8.8.8.8:53"
@@ -347,11 +353,17 @@ tunnels:
     engine: dnstt-revived
     domain: stealth.example.com
     client:
-      health_check: true
-      health_check_proxy_type: socks5
-      health_check_proxy_addr: 127.0.0.1
-      health_check_proxy_port: 1080
-      health_check_timeout: 10
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: false # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10002
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_protocol: udp           # udp, doh, dot
       dns_resolver: "8.8.8.8:53"
       bind_addr: 0.0.0.0
@@ -376,7 +388,17 @@ tunnels:
     engine: dnstt
     domain: backup.example.com
     client:
-      health_check: false
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: false # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10003
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_protocol: udp
       dns_resolver: "9.9.9.9:53"
       bind_addr: 127.0.0.1        # Only local connections
@@ -406,11 +428,11 @@ tunnels:
 | `dns_resolver` | string | DNS server to query | `1.1.1.1:53` |
 | `bind_addr` | IP | Local address for proxy | `0.0.0.0` |
 | `bind_port` | port | Local port for proxy | Required |
-| `health_check` | boolean | Enable end-to-end health monitoring | `false` |
-| `health_check_proxy_type` | string | Proxy protocol (`http`/`socks5`) | `http` |
-| `health_check_proxy_addr` | IP | Health check target address | `127.0.0.1` |
-| `health_check_proxy_port` | port | Health check target port | Required if enabled |
-| `health_check_timeout` | seconds | Connection timeout | `5` |
+| `health_check.enabled` | boolean | Enable end-to-end health monitoring | `false` |
+| `health_check.proxy_type` | string | Proxy protocol (`http`/`socks5`) | `http` |
+| `health_check.proxy_addr` | IP | Health check target address | `127.0.0.1` |
+| `health_check.proxy_port` | port | Health check target port | Required if enabled |
+| `health_check.timeout` | seconds | Connection timeout | `5` |
 
 #### Server Parameters
 | Parameter | Type | Description | Default |
@@ -638,11 +660,12 @@ Health checks verify that tunnels are fully operational by testing connectivity 
 
 ```yaml
 client:
-  health_check: true                          # Enable health monitoring
-  health_check_proxy_type: http               # 'http' or 'socks5'
-  health_check_proxy_addr: 127.0.0.1          # Local proxy address
-  health_check_proxy_port: 8080               # Local proxy port
-  health_check_timeout: 5                     # Connection timeout
+  health_check:
+    enabled: true                             # Enable health monitoring
+    proxy_type: http                          # 'http' or 'socks5'
+    proxy_addr: 127.0.0.1                     # Local proxy address
+    proxy_port: 8080                          # Local proxy port
+    timeout: 5                                # Connection timeout
 ```
 
 **Requirements:**
