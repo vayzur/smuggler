@@ -46,8 +46,18 @@ TimeoutStopSec=3s
 Restart=always
 RestartSec=1s
 
+{% if tun.engine == "slipstream" and slipstream_mimalloc %}
+Environment="LD_PRELOAD={{ mimalloc_path.stdout }}"
+Environment="MI_ARENA_EAGER_COMMIT={{ slipstream_mimalloc_MI_ARENA_EAGER_COMMIT }}"
+Environment="MI_PADDING={{ slipstream_mimalloc_MI_PADDING }}"
+Environment="MI_RESET_DELAY={{ slipstream_mimalloc_MI_RESET_DELAY }}"
+Environment="MI_PURGE_DELAY={{ slipstream_mimalloc_MI_PURGE_DELAY }}"
+Environment="MI_SEGMENT_CACHE={{ slipstream_mimalloc_MI_SEGMENT_CACHE }}"
+{% endif %}
+
 {% if tun.engine != "slipstream" %}
 {% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
+
 {% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %}
 {% endif %}
 

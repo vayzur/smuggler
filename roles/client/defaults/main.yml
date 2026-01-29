@@ -6,3 +6,10 @@ dnstt_privkey: "dnstt.key"
 
 dnstt_GOGC: "10"
 dnstt_GOMEMLIMIT: "512MiB"
+
+slipstream_mimalloc: false
+slipstream_mimalloc_MI_ARENA_EAGER_COMMIT: 1
+slipstream_mimalloc_MI_PADDING: 0
+slipstream_mimalloc_MI_RESET_DELAY: 0
+slipstream_mimalloc_MI_PURGE_DELAY: 0
+slipstream_mimalloc_MI_SEGMENT_CACHE: 0

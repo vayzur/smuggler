@@ -12,6 +12,31 @@
     name: openssl
     state: present
 
+- name: Detect mimalloc package
+  shell: |
+    apt-cache search '^libmimalloc[0-9]' | awk '{ print $1 }' | head -n1
+  register: mimalloc_pkg
+  changed_when: false
+  when: slipstream_mimalloc and ansible_os_family == "Debian"
+
+- name: Install mimalloc
+  apt:
+    name: "{{ mimalloc_pkg.stdout }}"
+    state: present
+    update_cache: true
+  when: slipstream_mimalloc and ansible_os_family == "Debian"
+
+- name: Detect mimalloc path
+  shell: ldconfig -p | grep mimalloc | awk '{ print $NF }'
+  register: mimalloc_path
+  changed_when: false
+  when: slipstream_mimalloc
+
+- name: Fail if mimalloc not found
+  fail:
+    msg: "mimalloc not found"
+  when: slipstream_mimalloc and mimalloc_path.stdout == ""
+
 - name: Check if slipstream keys exists
   stat:
     path: "/tmp/{{ slipstream_privkey }}"
@@ -24,3 +49,21 @@
   command: >
     openssl req -x509 -newkey rsa:2048 -nodes -keyout {{ keys_path }}/{{ slipstream_privkey }} -out {{ keys_path }}/{{ slipstream_pubkey }} -days 365 -subj "/CN=slipstream"
   when: not slipstream_keys.stat.exists
+
+- name: Fetch slipstream keys to localhost
+  fetch:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | basename }}"
+    flat: true
+  loop:
+    - "{{ keys_path }}/{{ slipstream_privkey }}"
+    - "{{ keys_path }}/{{ slipstream_pubkey }}"
+  when: not slipstream_keys.stat.exists
+  run_once: true
+
+- name: Copy slipstream privkey to server node
+  copy:
+    src: "/tmp/{{ slipstream_privkey }}"
+    dest: "{{ keys_path }}/{{ slipstream_privkey }}"
+    mode: 0600
+  when: slipstream_keys.stat.exists

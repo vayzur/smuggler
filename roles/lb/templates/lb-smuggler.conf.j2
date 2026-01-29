@@ -12,7 +12,7 @@ table ip lb {
     map lb_backends {
         typeof meta mark : ip daddr . tcp dport
         flags dynamic
-        elements = { {% for tun in smuggler_tunnels %}{% if tun.client.lb | default(true) %}{{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %} }
+        elements = { {% for tun in smuggler_tunnels %}{% if tun.client.lb.enabled | default(false) %}{{ loop.index0 }} : {{ tun.client.bind_addr if tun.client.bind_addr != '0.0.0.0' else '127.0.0.1' }} . {{ tun.client.bind_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %} }
     }
 
     chain prerouting {

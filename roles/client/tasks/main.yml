@@ -1,37 +1,9 @@
 ---
-- name: Copy dnstt-client
-  copy:
-    src: dnstt-client
-    dest: /usr/local/bin/dnstt-client
-    mode: 0755
-  when: "'dnstt' in smuggler_engines"
-  tags:
-    - dnstt-client-binary
-
-- name: Copy slipstream-client
-  copy:
-    src: slipstream-client
-    dest: /usr/local/bin/slipstream-client
-    mode: 0755
-  when: "'slipstream' in smuggler_engines"
-  tags:
-    - slipstream-client-binary
-
-- name: Copy dnstt-revived-client
-  copy:
-    src: dnstt-revived-client
-    dest: /usr/local/bin/dnstt-revived-client
-    mode: 0755
-  when: "'dnstt-revived' in smuggler_engines"
-  tags:
-    - dnstt-revived-client-binary
-
-- name: Copy dnstt shared public key to client node
-  copy:
-    src: "/tmp/{{ dnstt_pubkey }}"
-    dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
-    mode: 0600
+- import_tasks: dnstt.yml
   when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
+
+- import_tasks: slipstream.yml
+  when: smuggler_engines | intersect(['slipstream']) | length > 0
 
 - name: Make health check script
   template:
