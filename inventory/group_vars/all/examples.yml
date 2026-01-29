@@ -6,12 +6,17 @@ tunnels:
     engine: dnstt
     domain: d.domain.tld
     client:
-      lb: false
-      health_check: false # Requires a local proxy to check End-to-End connection
-      health_check_proxy_type: http
-      health_check_proxy_addr: 127.0.0.1
-      health_check_proxy_port: 10001
-      health_check_timeout: 5
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: true # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10001
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_protocol: udp # udp, doh, dot
       dns_resolver: "1.1.1.1:53"
       bind_addr: 0.0.0.0
@@ -22,10 +27,10 @@ tunnels:
       target_addr: 127.0.0.1
       target_port: 2052
       mtu: 493
-      # proxy:
-      #   - name: p1
-      #     remote_host: 127.0.0.1
-      #     remote_port: 22
+      proxy:
+        - name: p1
+          remote_host: 127.0.0.1
+          remote_port: 22
 
   - name: tun1
     client_node: lb0
@@ -33,12 +38,17 @@ tunnels:
     engine: slipstream
     domain: d.domain.tld
     client:
-      lb: false
-      health_check: false # Requires a local proxy to check End-to-End connection
-      health_check_proxy_type: socks5
-      health_check_proxy_addr: 127.0.0.1
-      health_check_proxy_port: 10002
-      health_check_timeout: 5
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: true # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10002
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_resolver:
         - "1.1.1.1:53"
         - "8.8.8.8:53"
@@ -52,10 +62,10 @@ tunnels:
       target_addr: 127.0.0.1
       target_port: 2052
       max_connections: 256
-      # proxy:
-      #   - name: p1
-      #     remote_host: 127.0.0.1
-      #     remote_port: 22
+      proxy:
+        - name: p1
+          remote_host: 127.0.0.1
+          remote_port: 22
 
   - name: tun2
     client_node: lb0
@@ -63,12 +73,17 @@ tunnels:
     engine: dnstt-revived
     domain: d.domain.tld
     client:
-      lb: false
-      health_check: false # Requires a local proxy to check End-to-End connection
-      health_check_proxy_type: http
-      health_check_proxy_addr: 127.0.0.1
-      health_check_proxy_port: 10003
-      health_check_timeout: 5
+      lb:
+        enabled: false
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: true # Requires a local proxy to check End-to-End connection
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 10003
+        test_url: "http://www.google.com/gen_204"
+        timeout: 5
       dns_protocol: udp # udp, doh, dot
       dns_resolver: "1.1.1.1:53"
       bind_addr: 0.0.0.0
@@ -85,7 +100,7 @@ tunnels:
       target_port: 2052
       mtu: 493
       loglevel: "warning"
-      # proxy:
-      #   - name: p1
-      #     remote_host: 127.0.0.1
-      #     remote_port: 22
+      proxy:
+        - name: p1
+          remote_host: 127.0.0.1
+          remote_port: 22
