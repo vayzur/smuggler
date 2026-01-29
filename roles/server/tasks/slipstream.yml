@@ -61,6 +61,13 @@
   when: not slipstream_keys.stat.exists
   run_once: true
 
+- name: Copy slipstream pubkey to server node
+  copy:
+    src: "/tmp/{{ slipstream_pubkey }}"
+    dest: "{{ keys_path }}/{{ slipstream_pubkey }}"
+    mode: 0600
+  when: slipstream_keys.stat.exists
+
 - name: Copy slipstream privkey to server node
   copy:
     src: "/tmp/{{ slipstream_privkey }}"
