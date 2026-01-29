@@ -12,6 +12,8 @@ if [ "$LB_ENABLED" = "true" ]; then
     LB_MARK="${6:?LB mark not specified}"
     LB_IP="${7:?LB IP not specified}"
     LB_PORT="${8:?LB port not specified}"
+    LB_BACKUP_IP="${9:?LB backup IP not specified}"
+    LB_BACKUP_PORT="${10:?LB backup port not specified}"
 fi
 
 curl -x "$PROXY" --max-time "$TIMEOUT" -s -o /dev/null "$URL"
@@ -20,12 +22,14 @@ curl_status=$?
 if [ "$curl_status" -ne 0 ]; then
     if [ "$LB_ENABLED" = "true" ]; then
         nft delete element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" } 2>/dev/null || true
+        nft add element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" : "$LB_BACKUP_IP" . "$LB_BACKUP_PORT" } 2>/dev/null || true
     fi
     systemctl restart smuggler@"$TUNNEL_NAME".service
     exit 1
 fi
 
 if [ "$LB_ENABLED" = "true" ]; then
+    nft delete element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" } 2>/dev/null || true
     nft add element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" : "$LB_IP" . "$LB_PORT" } 2>/dev/null || true
 fi
 
