@@ -12,9 +12,10 @@ tunnels:
         backup_port: 2053
       health_check:
         enabled: true # Requires a local proxy to check End-to-End connection
-        proxy_type: http
+        interval: "3s"
+        proxy_type: http 
         proxy_addr: 127.0.0.1
-        proxy_port: 10001
+        proxy_port: 2052
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_protocol: udp # udp, doh, dot
@@ -44,9 +45,10 @@ tunnels:
         backup_port: 2053
       health_check:
         enabled: true # Requires a local proxy to check End-to-End connection
-        proxy_type: http
+        interval: "3s"
+        proxy_type: http 
         proxy_addr: 127.0.0.1
-        proxy_port: 10002
+        proxy_port: 2052
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_resolver:
@@ -79,9 +81,10 @@ tunnels:
         backup_port: 2053
       health_check:
         enabled: true # Requires a local proxy to check End-to-End connection
-        proxy_type: http
+        interval: "3s"
+        proxy_type: http 
         proxy_addr: 127.0.0.1
-        proxy_port: 10003
+        proxy_port: 2052
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_protocol: udp # udp, doh, dot
