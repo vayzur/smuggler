@@ -19,18 +19,38 @@ table ip lb {
         type nat hook prerouting priority dstnat; policy accept;
 
 {% if lb.type == 'hash' %}
-        meta mark set jhash ip saddr . tcp sport mod {{ smuggler_tunnels_length }}
+        tcp dport @lb_ports meta mark set jhash ip saddr . tcp sport mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends
 {% elif lb.type == 'random' %}
-        meta mark set numgen random mod {{ smuggler_tunnels_length }}
+        tcp dport @lb_ports meta mark set numgen random mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends
 {% else %}
-        meta mark set numgen inc mod {{ smuggler_tunnels_length }}
+        tcp dport @lb_ports meta mark set numgen inc mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends
 {% endif %}
 
-        tcp dport @lb_ports dnat to meta mark map @lb_backends
     }
 
     chain postrouting {
         type nat hook postrouting priority srcnat; policy accept;
         oifname != "lo" iifname "lo" snat to {{ ansible_default_ipv4.address }}
     }
+
+{% if dns_load_balancing %}
+    map resolvers {
+        typeof meta mark : ip daddr . udp dport
+        flags dynamic
+        elements = { {% for resolver in dns_lb.resolvers %}{{ loop.index0 }} : {{ resolver }} . 53{{ ', ' if not loop.last }}{%- endfor %} }
+    }
+
+    chain output {
+        type nat hook output priority -100; policy accept;
+{% if dns_lb.type == 'hash' %}
+        udp dport 53 meta mark set jhash ip saddr . udp sport mod {{ dns_dns_.resolvers | list | length }} dnat to meta mark map @resolvers
+{% elif dns_lb.type == 'random' %}
+        udp dport 53 meta mark set numgen random mod {{ dns_lb.resolvers | dns_list | length }} dnat to meta mark map @resolvers
+{% else %}
+        udp dport 53 meta mark set numgen inc mod {{ dns_lb.resolvers | list | length }} dnat to meta mark map @resolvers
+{% endif %}
+
+    }
+{% endif %}
+
 }

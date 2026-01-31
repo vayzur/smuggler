@@ -19,3 +19,12 @@ lb:
     - "8443"
     - "9200-9400"
     - "10000-10200"
+
+dns_load_balancing: false
+
+dns_lb:
+  type: "roundrobin" ## Options: hash, random, roundrobin
+  resolvers:
+    - "1.1.1.1"
+    - "8.8.8.8"
+    - "9.9.9.9"
