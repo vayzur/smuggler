@@ -26,7 +26,7 @@
   loop_control:
     loop_var: tun
     index_var: tun_idx
-  when: tun.client.health_check | default(false) | bool
+  when: tun.client.health_check.enabled | default(false) | bool
   tags:
     - client-health-check
 
@@ -40,7 +40,7 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  when: tun.client.health_check | default(false) | bool
+  when: tun.client.health_check.enabled | default(false) | bool
   tags:
     - client-health-check
 
@@ -84,6 +84,6 @@
   loop: "{{ smuggler_tunnels }}"
   loop_control:
     loop_var: tun
-  when: tun.client.health_check | default(false) | bool
+  when: tun.client.health_check.enabled | default(false) | bool
   tags:
     - client-health-check
