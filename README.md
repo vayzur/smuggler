@@ -326,10 +326,11 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: false # Requires a local proxy to check End-to-End connection
+        enabled: false
+        interval: "5s"
         proxy_type: http
         proxy_addr: 127.0.0.1
-        proxy_port: 10001
+        proxy_port: 8080
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_resolver: 
@@ -358,10 +359,11 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: false # Requires a local proxy to check End-to-End connection
+        enabled: false
+        interval: "5s"
         proxy_type: http
         proxy_addr: 127.0.0.1
-        proxy_port: 10002
+        proxy_port: 1080
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_protocol: udp           # udp, doh, dot
@@ -393,10 +395,11 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: false # Requires a local proxy to check End-to-End connection
+        enabled: false
+        interval: "5s"
         proxy_type: http
         proxy_addr: 127.0.0.1
-        proxy_port: 10003
+        proxy_port: 9090
         test_url: "http://www.google.com/gen_204"
         timeout: 5
       dns_protocol: udp
@@ -478,7 +481,7 @@ Distribute traffic across multiple tunnels using kernel-level nftables.
 
 ```yaml
 ---
-load_balancing: false
+load_balancing: true
 
 lb:
   type: "hash" ## Options: hash, random, roundrobin
@@ -498,6 +501,16 @@ lb:
     - "8443"
     - "9200-9400"
     - "10000-10200"
+
+dns_load_balancing: true
+
+dns_lb:
+  type: "roundrobin" ## Options: hash, random, roundrobin
+  resolvers:
+    - "1.1.1.1"
+    - "8.8.8.8"
+    - "9.9.9.9"
+
 ```
 
 **Load Balancing Types:**
