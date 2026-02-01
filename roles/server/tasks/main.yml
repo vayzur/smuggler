@@ -1,9 +1,14 @@
 ---
 - import_tasks: dnstt.yml
   when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
+  tags:
+    - dnstt-server
+    - dnstt-revived-server
 
 - import_tasks: slipstream.yml
   when: smuggler_engines | intersect(['slipstream']) | length > 0
+  tags:
+    - slipstream-server
 
 - name: Make systemd unit file for each tunnel
   template:

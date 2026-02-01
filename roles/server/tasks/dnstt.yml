@@ -17,33 +17,40 @@
   tags:
     - dnstt-revived-server-binary
 
-- name: Check if shared key exists
+- name: Check if dnstt keys exists
   stat:
     path: "/tmp/{{ dnstt_privkey }}"
   register: dnstt_keys
   delegate_to: localhost
   run_once: true
   become: false
+  tags:
+    - dnstt-keys
 
-- name: Generate shared keys if not exists
-  shell: |
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
-  when: not dnstt_keys.stat.exists
-
-- name: Fetch shared keys to localhost
-  fetch:
-    src: "{{ item }}"
-    dest: "/tmp/{{ item | basename }}"
-    flat: true
-  loop:
-    - "{{ keys_path }}/{{ dnstt_privkey }}"
-    - "{{ keys_path }}/{{ dnstt_pubkey }}"
+- name: Generate and fetch dnstt keys
   when: not dnstt_keys.stat.exists
   run_once: true
+  block:
+    - name: Generate dnstt keys
+      shell: |
+        dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
 
-- name: Copy shared privkey to server node
+    - name: Fetch dnstt keys to localhost
+      fetch:
+        src: "{{ item }}"
+        dest: "/tmp/{{ item | basename }}"
+        flat: true
+      loop:
+        - "{{ keys_path }}/{{ dnstt_privkey }}"
+        - "{{ keys_path }}/{{ dnstt_pubkey }}"
+  tags:
+    - dnstt-keys
+
+- name: Copy dnstt privkey
   copy:
     src: "/tmp/{{ dnstt_privkey }}"
     dest: "{{ keys_path }}/{{ dnstt_privkey }}"
     mode: 0600
   when: dnstt_keys.stat.exists
+  tags:
+    - dnstt-keys

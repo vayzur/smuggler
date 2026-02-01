@@ -17,8 +17,10 @@
   tags:
     - dnstt-revived-client-binary
 
-- name: Copy dnstt shared public key to client node
+- name: Copy dnstt public key
   copy:
     src: "/tmp/{{ dnstt_pubkey }}"
     dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
     mode: 0600
+  tags:
+    - dnstt-keys

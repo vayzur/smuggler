@@ -1,9 +1,14 @@
 ---
 - import_tasks: dnstt.yml
   when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
+  tags:
+    - dnstt-client
+    - dnstt-revived-client
 
 - import_tasks: slipstream.yml
   when: smuggler_engines | intersect(['slipstream']) | length > 0
+  tags:
+    - slipstream-client
 
 - name: Make health check script
   template:
