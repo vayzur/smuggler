@@ -27,8 +27,12 @@
   register: mimalloc_path
   changed_when: false
   when: slipstream_mimalloc
+  tags:
+    - client-tunnels
 
 - name: Fail if mimalloc not found
   fail:
     msg: "mimalloc not found"
   when: slipstream_mimalloc and mimalloc_path.stdout == ""
+  tags:
+    - client-tunnels

@@ -31,38 +31,43 @@
   register: mimalloc_path
   changed_when: false
   when: slipstream_mimalloc
+  tags:
+    - server-tunnels
 
 - name: Fail if mimalloc not found
   fail:
     msg: "mimalloc not found"
   when: slipstream_mimalloc and mimalloc_path.stdout == ""
+  tags:
+    - server-tunnels
 
-- name: Check if slipstream keys exists
+- name: Check slipstream keys on controller
   stat:
     path: "/tmp/{{ slipstream_privkey }}"
   register: slipstream_keys
   delegate_to: localhost
-  run_once: true
   become: false
   tags:
     - slipstream-keys
 
-- name: Generate and fetch slipstream keys
+- name: Generate slipstream keys
+  shell: |
+    openssl req -x509 -newkey rsa:2048 -nodes -keyout {{ keys_path }}/{{ slipstream_privkey }} -out {{ keys_path }}/{{ slipstream_pubkey }} -days 365 -subj "/CN=slipstream"
   when: not slipstream_keys.stat.exists
-  run_once: true
-  block:
-    - name: Generate slipstream keys
-      shell: |
-        openssl req -x509 -newkey rsa:2048 -nodes -keyout {{ keys_path }}/{{ slipstream_privkey }} -out {{ keys_path }}/{{ slipstream_pubkey }} -days 365 -subj "/CN=slipstream"
+  throttle: 1
+  tags:
+    - slipstream-keys
 
-    - name: Fetch slipstream keys to localhost
-      fetch:
-        src: "{{ item }}"
-        dest: "/tmp/{{ item | basename }}"
-        flat: true
-      loop:
-        - "{{ keys_path }}/{{ slipstream_privkey }}"
-        - "{{ keys_path }}/{{ slipstream_pubkey }}"
+- name: Fetch slipstream keys to localhost
+  fetch:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | basename }}"
+    flat: true
+  loop:
+    - "{{ keys_path }}/{{ slipstream_privkey }}"
+    - "{{ keys_path }}/{{ slipstream_pubkey }}"
+  when: not slipstream_keys.stat.exists
+  throttle: 1
   tags:
     - slipstream-keys
 
@@ -70,8 +75,7 @@
   copy:
     src: "/tmp/{{ slipstream_pubkey }}"
     dest: "{{ keys_path }}/{{ slipstream_pubkey }}"
-    mode: 0600
-  when: slipstream_keys.stat.exists
+    mode: 0644
   tags:
     - slipstream-keys
 
@@ -80,6 +84,5 @@
     src: "/tmp/{{ slipstream_privkey }}"
     dest: "{{ keys_path }}/{{ slipstream_privkey }}"
     mode: 0600
-  when: slipstream_keys.stat.exists
   tags:
     - slipstream-keys

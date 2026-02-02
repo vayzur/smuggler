@@ -17,32 +17,33 @@
   tags:
     - dnstt-revived-server-binary
 
-- name: Check if dnstt keys exists
+- name: Check dnstt keys on controller
   stat:
     path: "/tmp/{{ dnstt_privkey }}"
   register: dnstt_keys
   delegate_to: localhost
-  run_once: true
   become: false
   tags:
     - dnstt-keys
 
-- name: Generate and fetch dnstt keys
+- name: Generate dnstt keys
+  shell: |
+    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
   when: not dnstt_keys.stat.exists
-  run_once: true
-  block:
-    - name: Generate dnstt keys
-      shell: |
-        dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
+  throttle: 1  # Only one at a time
+  tags:
+    - dnstt-keys
 
-    - name: Fetch dnstt keys to localhost
-      fetch:
-        src: "{{ item }}"
-        dest: "/tmp/{{ item | basename }}"
-        flat: true
-      loop:
-        - "{{ keys_path }}/{{ dnstt_privkey }}"
-        - "{{ keys_path }}/{{ dnstt_pubkey }}"
+- name: Fetch dnstt keys to localhost
+  fetch:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | basename }}"
+    flat: true
+  loop:
+    - "{{ keys_path }}/{{ dnstt_privkey }}"
+    - "{{ keys_path }}/{{ dnstt_pubkey }}"
+  when: not dnstt_keys.stat.exists
+  throttle: 1  # Only one at a time
   tags:
     - dnstt-keys
 
@@ -51,6 +52,13 @@
     src: "/tmp/{{ dnstt_privkey }}"
     dest: "{{ keys_path }}/{{ dnstt_privkey }}"
     mode: 0600
-  when: dnstt_keys.stat.exists
+  tags:
+    - dnstt-keys
+
+- name: Copy dnstt pubkey
+  copy:
+    src: "/tmp/{{ dnstt_pubkey }}"
+    dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
+    mode: 0644
   tags:
     - dnstt-keys
