@@ -11,7 +11,7 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: true # Requires a local proxy to check End-to-End connection
+        enabled: true
         interval: "3s"
         proxy_type: http 
         proxy_addr: 127.0.0.1
@@ -44,7 +44,7 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: true # Requires a local proxy to check End-to-End connection
+        enabled: true
         interval: "3s"
         proxy_type: http 
         proxy_addr: 127.0.0.1
@@ -64,6 +64,7 @@ tunnels:
       target_addr: 127.0.0.1
       target_port: 2052
       max_connections: 256
+      idle_timeout_seconds: 5
       proxy:
         - name: p1
           remote_host: 127.0.0.1
@@ -80,7 +81,7 @@ tunnels:
         backup_addr: 127.0.0.1
         backup_port: 2053
       health_check:
-        enabled: true # Requires a local proxy to check End-to-End connection
+        enabled: true
         interval: "3s"
         proxy_type: http 
         proxy_addr: 127.0.0.1
