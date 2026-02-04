@@ -47,9 +47,11 @@ all:
       ansible_host: 198.51.100.5
   children:
     server_nodes:
-      hosts: [server1]
+      hosts:
+        server1:
     client_nodes:
-      hosts: [client1]
+      hosts:
+        client1:
 ```
 
 **tunnels.yml:**
