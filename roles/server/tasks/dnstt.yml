@@ -1,21 +1,11 @@
 ---
-- name: Copy dnstt-server
-  copy:
-    src: dnstt-server
+- name: Download dnstt-server binary
+  get_url:
+    url: "https://github.com/0xAFz/dnstt/releases/download/latest/dnstt-server-linux-amd64"
     dest: /usr/local/bin/dnstt-server
     mode: 0755
-  when: "'dnstt' in smuggler_engines"
   tags:
     - dnstt-server-binary
-
-- name: Copy dnstt-revived-server
-  copy:
-    src: dnstt-revived-server
-    dest: /usr/local/bin/dnstt-revived-server
-    mode: 0755
-  when: "'dnstt-revived' in smuggler_engines"
-  tags:
-    - dnstt-revived-server-binary
 
 - name: Check dnstt keys on controller
   stat:
@@ -28,7 +18,7 @@
 
 - name: Generate dnstt keys
   shell: |
-    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} || dnstt-revived-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
+    dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
   when: not dnstt_keys.stat.exists
   throttle: 1  # Only one at a time
   tags:

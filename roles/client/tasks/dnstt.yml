@@ -1,26 +1,16 @@
 ---
-- name: Copy dnstt-client
-  copy:
-    src: dnstt-client
+- name: Download dnstt-client binary
+  get_url:
+    url: "https://github.com/0xAFz/dnstt/releases/download/latest/dnstt-client-linux-amd64"
     dest: /usr/local/bin/dnstt-client
     mode: 0755
-  when: "'dnstt' in smuggler_engines"
   tags:
     - dnstt-client-binary
-
-- name: Copy dnstt-revived-client
-  copy:
-    src: dnstt-revived-client
-    dest: /usr/local/bin/dnstt-revived-client
-    mode: 0755
-  when: "'dnstt-revived' in smuggler_engines"
-  tags:
-    - dnstt-revived-client-binary
 
 - name: Copy dnstt public key
   copy:
     src: "/tmp/{{ dnstt_pubkey }}"
     dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
-    mode: 0600
+    mode: 0644
   tags:
     - dnstt-keys

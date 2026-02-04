@@ -1,9 +1,8 @@
 ---
 - import_tasks: dnstt.yml
-  when: smuggler_engines | intersect(['dnstt', 'dnstt-revived']) | length > 0
+  when: smuggler_engines | intersect(['dnstt']) | length > 0
   tags:
     - dnstt-client
-    - dnstt-revived-client
 
 - import_tasks: slipstream.yml
   when: smuggler_engines | intersect(['slipstream']) | length > 0
@@ -20,7 +19,7 @@
   tags:
     - client-health-check
 
-- name: Make health check service for each tunnel
+- name: Make health check services
   template:
     src: health-smuggler@.service.j2
     dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.service"
@@ -35,7 +34,7 @@
   tags:
     - client-health-check
 
-- name: Make health check timer for each tunnel
+- name: Make health check timers
   template:
     src: health-smuggler@.timer.j2
     dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.timer"
@@ -49,7 +48,7 @@
   tags:
     - client-health-check
 
-- name: Make systemd service for each tunnel
+- name: Make systemd service
   template:
     src: smuggler@.service.j2
     dest: "/etc/systemd/system/smuggler@{{ tun.name }}.service"

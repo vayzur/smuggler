@@ -46,27 +46,15 @@ TimeoutStopSec=3s
 Restart=always
 RestartSec=1s
 
-{% if tun.engine == "slipstream" and slipstream_mimalloc %}
-Environment="LD_PRELOAD={{ mimalloc_path.stdout }}"
-Environment="MI_ARENA_EAGER_COMMIT={{ slipstream_mimalloc_MI_ARENA_EAGER_COMMIT }}"
-Environment="MI_PADDING={{ slipstream_mimalloc_MI_PADDING }}"
-Environment="MI_RESET_DELAY={{ slipstream_mimalloc_MI_RESET_DELAY }}"
-Environment="MI_PURGE_DELAY={{ slipstream_mimalloc_MI_PURGE_DELAY }}"
-Environment="MI_SEGMENT_CACHE={{ slipstream_mimalloc_MI_SEGMENT_CACHE }}"
-{% endif %}
-
 {% if tun.engine != "slipstream" %}
-{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
-
-{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %}
+{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %} 
+{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %} 
 {% endif %}
 
 {% if tun.engine == "slipstream" %}
-ExecStart=/usr/local/bin/slipstream-server --dns-listen-host {{ tun.server.bind_addr }} --dns-listen-port {{ tun.server.bind_port }} --target-address {{ tun.server.target_addr }}:{{ tun.server.target_port }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }} --max-connections {{ tun.server.max_connections }} --idle-timeout-seconds {{ tun.server.idle_timeout_seconds }}
-{% elif tun.engine == "dnstt-revived" %}
-ExecStart=/usr/local/bin/dnstt-revived-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -log-level {{ tun.server.loglevel }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr }}:{{ tun.server.target_port }}
+ExecStart=/usr/local/bin/slipstream-server --dns-listen-host {{ tun.server.bind_addr | default(ansible_default_ipv4.address, true) }} --dns-listen-port {{ tun.server.bind_port | default(53, true) }} --target-address {{ tun.server.target_addr | default('127.0.0.1', true) }}:{{ tun.server.target_port | default(5201, true) }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }} --max-connections {{ tun.server.max_connections | default(512, true) }} --idle-timeout-seconds {{ tun.server.idle_timeout_seconds | default(3, true) }}
 {% else %}
-ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr }}:{{ tun.server.bind_port }} -mtu {{ tun.server.mtu }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr }}:{{ tun.server.target_port }}
+ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr | default(ansible_default_ipv4.address, true) }}:{{ tun.server.bind_port | default(53, true) }} -mtu {{ tun.server.mtu | default(1232, true) }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr | default('127.0.0.1', true) }}:{{ tun.server.target_port | default('7000', true) }}
 {% endif %}
 
 [Install]

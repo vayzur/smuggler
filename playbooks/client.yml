@@ -2,13 +2,13 @@
 - hosts: client_nodes
   become: true
   pre_tasks:
-    - name: Filter tunnels for this host
+    - name: Filter tunnels
       set_fact:
         smuggler_tunnels: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list }}"
         smuggler_tunnels_length: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list | length }}"
       tags: always
 
-    - name: Filter engines for this host
+    - name: Filter engines
       set_fact:
         smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list }}"
       tags: always

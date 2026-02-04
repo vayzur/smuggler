@@ -1,7 +1,8 @@
 #!/usr/sbin/nft -f
 # vim: set tabstop=4 shiftwidth=4 expandtab:
 
-table ip lb {
+table ip smuggler_lb {
+{% if lb.enabled | default(false) %}
     set lb_ports {
         type inet_service
         flags interval
@@ -32,8 +33,9 @@ table ip lb {
         type nat hook postrouting priority srcnat; policy accept;
         oifname != "lo" iifname "lo" snat to {{ ansible_default_ipv4.address }}
     }
+{% endif %}
 
-{% if dns_load_balancing %}
+{% if dns_lb.enabled | default(false) %}
     map resolvers {
         typeof meta mark : ip daddr . udp dport
         flags dynamic

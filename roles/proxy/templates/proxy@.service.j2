@@ -15,7 +15,7 @@ TimeoutStopSec=3
 Restart=always
 RestartSec=1
 
-ExecStart=/usr/bin/ssh -T -N -D {{ item.0.server.target_addr }}:{{ item.0.server.target_port }} -o NoHostAuthenticationForLocalhost=yes {{ item.1.remote_host }} -p {{ item.1.remote_port }} -i {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}
+ExecStart=/usr/bin/ssh -T -N -D {{ item.0.server.target_addr }}:{{ item.0.server.target_port }} -o NoHostAuthenticationForLocalhost=yes {{ item.1.remote_host | default('127.0.0.1', true) }} -p {{ item.1.remote_port | default(22, true) }} -i {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}
 
 [Install]
 WantedBy=multi-user.target

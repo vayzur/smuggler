@@ -1,10 +1,10 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Run Health Check for Smuggler Instance {{ tun.name }} every {{ tun.client.health_check.interval | default('3s') }}
+Description=Run Health Check for Smuggler Instance {{ tun.name }} every {{ tun.client.health_check.interval | default('3s', true) }}
 
 [Timer]
-OnUnitActiveSec={{ tun.client.health_check.interval | default('3s') }}
+OnUnitActiveSec={{ tun.client.health_check.interval | default('3s', true) }}
 AccuracySec=50ms
 Unit=health-smuggler@{{ tun.name }}.service
 

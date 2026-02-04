@@ -1,17 +1,33 @@
 ---
-# load_balancing: true
+## Master switch: enables/disables ALL load balancing features
+load_balancing: false
 
-# lb:
-#   type: "random" ## Options: hash, random, roundrobin
-#   ports:
-#     - "8080"
-#     - "10000-10200"
+# Traffic load balancing - distributes client traffic across multiple tunnel servers
+lb:
+  enabled: false  # Enable traffic LB (requires load_balancing: true)
+  type: "hash" # Options: hash, random, roundrobin
+  ports:
+    # - "80"
+    # - "8080"
+    # - "8880"
+    # - "2052"
+    # - "2082"
+    # - "2086"
+    # - "2095"
+    # - "443"
+    # - "2053"
+    # - "2083"
+    # - "2087"
+    # - "2096"
+    # - "8443"
+    # - "9200-9400"
+    - "10000-10200"
 
-# dns_load_balancing: true
-
-# dns_lb:
-#   type: roundrobin ## Options: hash, random, roundrobin
-#   resolvers:
-#     - "1.1.1.1"
-#     - "8.8.8.8"
-#     - "9.9.9.9"
+# DNS resolver load balancing - distributes DNS queries across multiple resolvers
+dns_lb:
+  enabled: false  # Enable DNS LB (requires load_balancing: true)
+  type: "roundrobin" # Options: hash, random, roundrobin
+  resolvers:
+    - "1.1.1.1"
+    - "8.8.8.8"
+    - "9.9.9.9"

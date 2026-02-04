@@ -46,27 +46,17 @@ TimeoutStopSec=3s
 Restart=always
 RestartSec=1s
 
-{% if tun.engine == "slipstream" and slipstream_mimalloc %}
-Environment="LD_PRELOAD={{ mimalloc_path.stdout }}"
-Environment="MI_ARENA_EAGER_COMMIT={{ slipstream_mimalloc_MI_ARENA_EAGER_COMMIT }}"
-Environment="MI_PADDING={{ slipstream_mimalloc_MI_PADDING }}"
-Environment="MI_RESET_DELAY={{ slipstream_mimalloc_MI_RESET_DELAY }}"
-Environment="MI_PURGE_DELAY={{ slipstream_mimalloc_MI_PURGE_DELAY }}"
-Environment="MI_SEGMENT_CACHE={{ slipstream_mimalloc_MI_SEGMENT_CACHE }}"
-{% endif %}
-
 {% if tun.engine != "slipstream" %}
-{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %}
-
-{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %}
+{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %} 
+{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %} 
 {% endif %}
+
+{% set dns_resolver = tun.client.dns_resolver | default('8.8.8.8:53', true) %}
 
 {% if tun.engine == "slipstream" %}
-ExecStart=/usr/local/bin/slipstream-client --tcp-listen-host {{ tun.client.bind_addr }} --tcp-listen-port {{ tun.client.bind_port }} {{ (tun.client.dns_resolver is iterable and tun.client.dns_resolver is not string) | ternary(tun.client.dns_resolver | map('regex_replace','^(.*)$','--resolver \\1') | join(' '), '--resolver ' ~ tun.client.dns_resolver) }} --domain {{ tun.domain }} --keep-alive-interval {{ tun.client.keep_alive_interval }}
-{% elif tun.engine == "dnstt-revived" %}
-ExecStart=/usr/local/bin/dnstt-revived-client -{{ tun.client.dns_protocol }} {{ tun.client.dns_resolver }} -log-level {{ tun.client.loglevel }} -max-num-labels {{ tun.client.max_num_labels }} -max-qname-len {{ tun.client.max_qname_len }} -rps {{ tun.client.rps }} -udp-workers {{ tun.client.udp_workers }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+ExecStart=/usr/local/bin/slipstream-client --tcp-listen-host {{ tun.client.bind_addr | default('0.0.0.0', true) }} --tcp-listen-port {{ tun.client.bind_port | default(5201, true) }} {{ (dns_resolver is iterable and dns_resolver is not string) | ternary(dns_resolver | map('regex_replace','^(.*)$','--resolver \\1') | join(' '), '--resolver ' ~ dns_resolver) }} --domain {{ tun.domain }} --keep-alive-interval {{ tun.client.keep_alive_interval | default(200, true) }}
 {% else %}
-ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_protocol }} {{ tun.client.dns_resolver }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr }}:{{ tun.client.bind_port }}
+ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_protocol | default('udp', true) }} {{ dns_resolver }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr | default('0.0.0.0', true) }}:{{ tun.client.bind_port | default(7000, true) }}
 {% endif %}
 
 [Install]

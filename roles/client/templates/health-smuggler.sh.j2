@@ -7,7 +7,7 @@ TIMEOUT="${4:?Timeout not specified}"
 LB_ENABLED="${5:-false}"
 
 if [ "$LB_ENABLED" = "true" ]; then
-    LB_TABLE_NAME="lb"
+    LB_TABLE_NAME="smuggler_lb"
     LB_MAP_NAME="lb_backends"
     LB_MARK="${6:?LB mark not specified}"
     LB_IP="${7:?LB IP not specified}"
