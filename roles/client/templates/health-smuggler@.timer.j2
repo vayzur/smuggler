@@ -4,6 +4,7 @@
 Description=Run Health Check for Smuggler Instance {{ tun.name }} every {{ tun.client.health_check.interval | default('3s', true) }}
 
 [Timer]
+OnBootSec={{ tun.client.health_check.boot_delay | default('10s', true) }}
 OnUnitActiveSec={{ tun.client.health_check.interval | default('3s', true) }}
 AccuracySec=50ms
 Unit=health-smuggler@{{ tun.name }}.service
