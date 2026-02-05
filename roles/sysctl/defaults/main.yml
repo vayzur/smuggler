@@ -11,7 +11,6 @@ sysctl_config:
   net.ipv4.tcp_rmem: "4096 87380 2097152"
   net.ipv4.tcp_wmem: "4096 87380 2097152"
   net.ipv4.tcp_congestion_control: bbr
-  net.ipv4.tcp_base_mss: 1400
   net.ipv4.tcp_notsent_lowat: 16384
   net.ipv4.tcp_sack: 1
   net.ipv4.tcp_fastopen: 3
