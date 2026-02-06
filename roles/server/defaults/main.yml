@@ -1,4 +1,5 @@
 ---
+controller_keys_path: "{{ lookup('env','HOME') }}/.smuggler"
 keys_path: "/opt"
 
 dnstt_pubkey: "dnstt.pub"

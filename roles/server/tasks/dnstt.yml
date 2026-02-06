@@ -7,9 +7,19 @@
   tags:
     - dnstt-server-binary
 
+- name: Ensure smuggler directory exists on controller
+  file:
+    path: "{{ controller_keys_path }}"
+    state: directory
+    mode: 0700
+  delegate_to: localhost
+  become: false
+  tags:
+    - dnstt-keys
+
 - name: Check dnstt keys on controller
   stat:
-    path: "/tmp/{{ dnstt_privkey }}"
+    path: "{{ controller_keys_path }}/{{ dnstt_privkey }}"
   register: dnstt_keys
   delegate_to: localhost
   become: false
@@ -27,7 +37,7 @@
 - name: Fetch dnstt keys to localhost
   fetch:
     src: "{{ item }}"
-    dest: "/tmp/{{ item | basename }}"
+    dest: "{{ controller_keys_path }}/{{ item | basename }}"
     flat: true
   loop:
     - "{{ keys_path }}/{{ dnstt_privkey }}"
@@ -39,7 +49,7 @@
 
 - name: Copy dnstt privkey
   copy:
-    src: "/tmp/{{ dnstt_privkey }}"
+    src: "{{ controller_keys_path }}/{{ dnstt_privkey }}"
     dest: "{{ keys_path }}/{{ dnstt_privkey }}"
     mode: 0600
   tags:
@@ -47,7 +57,7 @@
 
 - name: Copy dnstt pubkey
   copy:
-    src: "/tmp/{{ dnstt_pubkey }}"
+    src: "{{ controller_keys_path }}/{{ dnstt_pubkey }}"
     dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
     mode: 0644
   tags:

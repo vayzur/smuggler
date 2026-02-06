@@ -9,7 +9,7 @@
 
 - name: Copy dnstt public key
   copy:
-    src: "/tmp/{{ dnstt_pubkey }}"
+    src: "{{ controller_keys_path }}/{{ dnstt_pubkey }}"
     dest: "{{ keys_path }}/{{ dnstt_pubkey }}"
     mode: 0644
   tags:
