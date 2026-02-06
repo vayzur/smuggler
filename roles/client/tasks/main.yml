@@ -9,7 +9,7 @@
   tags:
     - slipstream-client
 
-- name: Make health check script
+- name: Deploy health check script
   template:
     src: health-smuggler.sh.j2
     dest: "/opt/health-smuggler.sh"
@@ -19,7 +19,7 @@
   tags:
     - client-health-check
 
-- name: Make health check services
+- name: Deploy health check services
   template:
     src: health-smuggler@.service.j2
     dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.service"
@@ -34,7 +34,7 @@
   tags:
     - client-health-check
 
-- name: Make health check timers
+- name: Deploy health check timers
   template:
     src: health-smuggler@.timer.j2
     dest: "/etc/systemd/system/health-smuggler@{{ tun.name }}.timer"
@@ -48,7 +48,7 @@
   tags:
     - client-health-check
 
-- name: Make systemd service
+- name: Deploy tunnel systemd service
   template:
     src: smuggler@.service.j2
     dest: "/etc/systemd/system/smuggler@{{ tun.name }}.service"
@@ -61,7 +61,7 @@
   tags:
     - client-tunnels
 
-- name: Reload systemd
+- name: Reload systemd daemon
   systemd:
     daemon_reload: true
   changed_when: true

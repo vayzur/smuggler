@@ -9,7 +9,7 @@
   tags:
     - slipstream-server
 
-- name: Make systemd services
+- name: Deploy tunnel systemd services
   template:
     src: smuggler@.service.j2
     dest: "/etc/systemd/system/smuggler@{{ tun.name }}.service"
@@ -22,7 +22,7 @@
   tags:
     - server-tunnels
 
-- name: Reload systemd
+- name: Reload systemd daemon
   systemd:
     daemon_reload: true
   changed_when: true

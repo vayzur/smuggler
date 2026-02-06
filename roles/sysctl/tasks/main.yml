@@ -1,5 +1,5 @@
 ---
-- name: Make sysctl.d directory
+- name: Ensure sysctl.d directory exists
   file:
     path: /etc/sysctl.d
     state: directory
@@ -7,7 +7,7 @@
     group: root
     mode: 0755
 
-- name: Apply sysctl settings
+- name: Deploy smuggler sysctl settings
   template:
     src: sysctl.conf.j2
     dest: /etc/sysctl.d/90-smuggler.conf

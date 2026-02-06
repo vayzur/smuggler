@@ -1,5 +1,5 @@
 ---
-- name: Generate ssh keys on control node
+- name: Generate SSH keys on control node
   delegate_to: localhost
   run_once: true
   become: false
@@ -7,27 +7,6 @@
     ssh-keygen -t ed25519 -f {{ ssh_privkey_path }} -N "" -q
   args:
     creates: "{{ ssh_privkey_path }}"
-
-- name: Read private key from control node
-  delegate_to: localhost
-  run_once: true
-  become: false
-  slurp:
-    src: "{{ ssh_privkey_path }}"
-  register: private_key_b64
-
-- name: Read public key from control node
-  delegate_to: localhost
-  run_once: true
-  become: false
-  slurp:
-    src: "{{ ssh_privkey_path }}.pub"
-  register: public_key_b64
-
-- name: Set ssh keys as facts
-  set_fact:
-    private_key: "{{ private_key_b64.content | b64decode }}"
-    public_key: "{{ public_key_b64.content | b64decode }}"
 
 - name: Ensure .ssh directory exists
   file:
@@ -37,18 +16,18 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
-- name: Deploy private key
+- name: Deploy private SSH key
   copy:
-    content: "{{ private_key }}"
+    content: "{{ lookup('file', ssh_privkey_path) }}"
     dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0600
     backup: true
 
-- name: Deploy public key
+- name: Deploy public SSH key
   copy:
-    content: "{{ public_key }}"
+    content: "{{ lookup('file', ssh_privkey_path + '.pub') }}"
     dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}.pub"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -58,10 +37,10 @@
 - name: Add public key to authorized_keys
   authorized_key:
     user: "{{ ansible_user }}"
-    key: "{{ public_key }}"
+    key: "{{ lookup('file', ssh_privkey_path + '.pub') }}"
     state: present
 
-- name: Make systemd unit file for each proxy
+- name: Deploy SSH proxy systemd service
   template:
     src: proxy@.service.j2
     dest: "/etc/systemd/system/proxy@{{ item.0.name }}-{{ item.1.name }}.service"
@@ -73,14 +52,14 @@
   tags:
     - proxy-services
   
-- name: Reload systemd
+- name: Reload systemd daemon
   systemd:
     daemon_reload: true
   when: units_result.changed
   tags:
     - proxy-services
 
-- name: Enable and start proxy services
+- name: Enable and start SSH proxy services
   systemd:
     name: "proxy@{{ item.0.name }}-{{ item.1.name }}.service"
     enabled: true

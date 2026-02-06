@@ -1,10 +1,10 @@
 ---
-- name: Install nftables
+- name: Install nftables package
   package:
     name: nftables
     state: present
 
-- name: Make nftables.d directory
+- name: Ensure nftables.d directory exists
   file:
     path: /etc/nftables.d
     state: directory
@@ -12,7 +12,7 @@
     group: root
     mode: 0755
 
-- name: Deploy smuggler load balancing config
+- name: Deploy smuggler load balancer config
   template:
     src: "lb-smuggler.conf.j2"
     dest: /etc/nftables.d/lb-smuggler.conf
@@ -23,7 +23,7 @@
   notify:
     - Reload lb
 
-- name: Deploy smuggler load balancing service
+- name: Deploy smuggler load balancer service
   template:
     src: lb-smuggler.service.j2
     dest: "/etc/systemd/system/lb-smuggler.service"
