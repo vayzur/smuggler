@@ -83,7 +83,7 @@ That's it! Smuggler handles the rest with intelligent defaults.
 - SSH client
 
 **Target Nodes:**
-- Debian/Ubuntu/RedHat/Fedora Linux
+- Debian/RedHat-based Linux
 - Python 3
 - SSH access with sudo privileges
 
