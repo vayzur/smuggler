@@ -9,6 +9,12 @@
   tags:
     - slipstream-client
 
+- name: Check if any tunnel has health check enabled
+  set_fact:
+    health_check_needed: "{{ smuggler_tunnels | selectattr('client.health_check.enabled', 'defined') | selectattr('client.health_check.enabled') | list | length > 0 }}"
+  tags:
+    - client-health-check
+
 - name: Deploy health check script
   template:
     src: health-smuggler.sh.j2
@@ -16,6 +22,7 @@
     mode: 0755
     owner: root
     group: root
+  when: health_check_needed | bool
   tags:
     - client-health-check
 
