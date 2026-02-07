@@ -1,43 +1,14 @@
 ---
-- name: Generate SSH keys on control node
-  delegate_to: localhost
-  run_once: true
-  become: false
+- name: Generate SSH keys
   command: >
-    ssh-keygen -t ed25519 -f {{ ssh_privkey_path }} -N "" -q
+    ssh-keygen -t ed25519 -f {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }} -N "" -q
   args:
-    creates: "{{ ssh_privkey_path }}"
-
-- name: Ensure .ssh directory exists
-  file:
-    path: "{{ ansible_user_dir }}/.ssh"
-    state: directory
-    mode: 0700
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-
-- name: Deploy private SSH key
-  copy:
-    content: "{{ lookup('file', ssh_privkey_path) }}"
-    dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0600
-    backup: true
-
-- name: Deploy public SSH key
-  copy:
-    content: "{{ lookup('file', ssh_privkey_path + '.pub') }}"
-    dest: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}.pub"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0644
-    backup: true
+    creates: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}"
 
 - name: Add public key to authorized_keys
   authorized_key:
     user: "{{ ansible_user }}"
-    key: "{{ lookup('file', ssh_privkey_path + '.pub') }}"
+    key: "{{ lookup('file', ansible_user_dir + '/.ssh/' + ssh_privkey + '.pub') }}"
     state: present
 
 - name: Deploy SSH proxy systemd service

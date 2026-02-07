@@ -2,4 +2,3 @@
 ssh_proxy: false
 
 ssh_privkey: "smuggler_ed25519"
-ssh_privkey_path: "/tmp/{{ ssh_privkey }}"
