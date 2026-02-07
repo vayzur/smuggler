@@ -2,8 +2,11 @@
 controller_keys_path: "{{ lookup('env','HOME') }}/.smuggler"
 keys_path: "/opt"
 
+dnstt_client_binary_url: "https://github.com/0xAFz/dnstt/releases/download/latest/dnstt-client-linux-amd64"
 dnstt_pubkey: "dnstt.pub"
 dnstt_privkey: "dnstt.key"
 
 dnstt_GOGC: "10"
 dnstt_GOMEMLIMIT: "512MiB"
+
+slipstream_client_binary_url: "https://github.com/net2share/slipstream-rust-build/releases/download/v2026.02.05/slipstream-client-linux-amd64"
