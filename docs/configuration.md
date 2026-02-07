@@ -339,7 +339,7 @@ tunnels:
 |-----------|------|----------|---------|-------------|
 | `proxy[].name` | string | Yes | - | Forward identifier |
 | `proxy[].remote_host` | IP | No | `127.0.0.1` | Remote host |
-| `proxy[].remote_port` | port | No | `22` | Remote port |
+| `proxy[].remote_port` | port | No | `{{ ansible_port }}` | Remote port |
 
 > [!WARNING]
 > `proxy[].remote_port` **MUST** be specify if SSH port is not default 
