@@ -1,15 +1,10 @@
 ---
-- name: Generate SSH keys
-  command: >
+- name: Generate SSH keys and add to authorized_keys
+  shell: |
     ssh-keygen -t ed25519 -f {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }} -N "" -q
+    cat {{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}.pub >> {{ ansible_user_dir }}/.ssh/authorized_keys
   args:
     creates: "{{ ansible_user_dir }}/.ssh/{{ ssh_privkey }}"
-
-- name: Add public key to authorized_keys
-  authorized_key:
-    user: "{{ ansible_user }}"
-    key: "{{ lookup('file', ansible_user_dir + '/.ssh/' + ssh_privkey + '.pub') }}"
-    state: present
 
 - name: Deploy SSH proxy systemd service
   template:
