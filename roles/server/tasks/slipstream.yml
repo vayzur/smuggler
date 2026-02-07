@@ -1,7 +1,7 @@
 ---
 - name: Download slipstream-server binary
   get_url:
-    url: "https://github.com/0xAFz/slipstream-rust/releases/download/latest/slipstream-server-linux-amd64"
+    url: "{{ slipstream_server_binary_url }}"
     dest: /usr/local/bin/slipstream-server
     mode: 0755
   tags:
