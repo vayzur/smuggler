@@ -1,0 +1,7 @@
+---
+- name: Restart dnsdist
+  systemd:
+    name: dnsdist.service
+    enabled: true
+    state: restarted
+    daemon_reload: true

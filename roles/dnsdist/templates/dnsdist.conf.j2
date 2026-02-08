@@ -1,0 +1,40 @@
+-- {{ ansible_managed }}
+
+setACL({
+{%- for acl in dnsdist_acl %}
+'{{ acl }}'{% if not loop.last %},{% endif %}
+{%- endfor %}
+})
+
+{% for server in dnsdist_upstream_servers %}
+newServer({address="{{ server }}"})
+{% endfor %}
+
+{% for tun in smuggler_tunnels %}
+newServer({address="{{ tun.server.bind_addr }}:{{ tun.server.bind_port }}", pool="{{ tun.domain }}"})
+{% endfor %}
+
+{% for domain in smuggler_tunnels | map(attribute='domain') | unique %}
+addAction(makeRule("{{ domain }}"), PoolAction("{{ domain }}"))
+{% endfor %}
+
+{% set action = dnsdist_default_action | default('drop') %}
+
+{% if action == "drop" %}
+addAction(AllRule(), DropAction())
+{% elif action == "refuse" %}
+addAction(AllRule(), RCodeAction(DNSRCode.REFUSED))
+{% elif action == "forward" %}
+addAction(AllRule(), PoolAction("default"))
+{% else %}
+addAction(AllRule(), DropAction())
+{% endif %}
+
+setLocal("{{ dnsdist_bind_addr | default('0.0.0.0', true) }}:{{ dnsdist_bind_port | default(53, true) }}")
+
+setServerPolicy({{ dnsdist_server_policy | default('leastOutstanding', true) }})
+
+setUDPTimeout({{ dnsdist_udp_timeout | default(2, true) }})
+setMaxUDPOutstanding({{ dnsdist_max_udp_outstanding | default(65535, true) }})
+setTCPRecvTimeout({{ dnsdist_tcp_recv_timeout | default(2, true) }})
+setTCPSendTimeout({{ dnsdist_tcp_send_timeout | default(2, true) }})

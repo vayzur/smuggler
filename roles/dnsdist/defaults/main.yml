@@ -1,0 +1,31 @@
+---
+dnsdist: false
+
+dnsdist_bind_addr: "0.0.0.0"
+dnsdist_bind_port: 53
+
+# ACL configuration
+dnsdist_acl:
+  - "0.0.0.0/0"
+  - "::/0"
+
+# Upstream DNS servers (for non-tunnel queries)
+dnsdist_upstream_servers: []
+# Example:
+# dnsdist_upstream_servers:
+#   - "8.8.8.8:53"
+#   - "1.1.1.1:53"
+
+# Load balancing policy
+# Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
+dnsdist_server_policy: "leastOutstanding"
+
+# Action for non-matching queries
+# Options: drop, refuse, forward
+dnsdist_default_action: "drop"
+
+# Performance
+dnsdist_udp_timeout: 2
+dnsdist_max_udp_outstanding: 65535
+dnsdist_tcp_recv_timeout: 2
+dnsdist_tcp_send_timeout: 2
