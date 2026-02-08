@@ -13,13 +13,26 @@ DNS tunneling encapsulates traffic inside DNS queries and responses, enabling yo
 
 ## Key Features
 
-- 🚀 **Multi-Engine Support**: `dnstt` or `slipstream` backends
-- ⚡ **Kernel-Level Load Balancing**: High-performance traffic distribution using nftables
-- 📝 **Declarative Configuration**: Define infrastructure in simple YAML
-- 🔧 **Systemd Integration**: Each tunnel runs as an independent service
-- 🌐 **DNS Resolver Load Balancing**: Distribute queries across multiple DNS servers
-- 💚 **Health Monitoring**: End-to-end connectivity verification
-- 🎯 **Flexible Architecture**: 1:N or N:1 deployment patterns
+### Client-Side
+- **End-to-End Health Checking**: Continuous connectivity verification with automatic failover
+- **Fast Connection Recovery**: Self-healing tunnels with rapid reconnection
+- **Kernel-Level Load Balancing**: nftables-powered traffic distribution (hash, random, roundrobin)
+- **DNS Resolver Load Balancing**: Distribute queries across multiple DNS servers
+- **Self-Healing**: Automatic recovery from connection failures
+
+### Server-Side
+- **Multi-Engine Support**: Choose between `dnstt` or `slipstream` backends
+- **Multi-Instance Load Balancing**: dnsdist-powered distribution across tunnel instances
+- **Multi-Domain Support**: Run multiple tunnels with different domains on same server
+- **Built-in SSH Proxies**: Fast tunnel setup without external proxy configuration
+- **Zone-Based DNS Routing**: Intelligent query forwarding per domain
+
+### Infrastructure
+- **Declarative Configuration**: Define entire infrastructure in simple YAML
+- **Systemd Integration**: Each tunnel runs as an independent managed service
+- **Kernel & Runtime Optimization**: Tuned for maximum performance
+- **Flexible Architecture**: Support for 1:N, N:1, and N:N deployment patterns
+- **Full Ansible Automation**: One-command deployment and management
 
 ## Quick Start
 ```bash
@@ -68,13 +81,13 @@ That's it! Smuggler handles the rest with intelligent defaults.
 
 ## Documentation
 
-- 📖 [Getting Started](docs/getting-started.md) - Prerequisites, installation
-- ⚙️ [Configuration Guide](docs/configuration.md) - Complete DSL reference
-- 🌐 [DNS Setup](docs/dns-setup.md) - DNS record configuration
-- ⚖️ [Load Balancing](docs/load-balancing.md) - Traffic and DNS resolver distribution
-- 🚀 [Deployment](docs/deployment.md) - Deployment strategies
-- 🔧 [Operations](docs/operations.md) - Service management, monitoring
-- 🔍 [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
+- [Getting Started](docs/getting-started.md) - Prerequisites, installation
+- [Configuration Guide](docs/configuration.md) - Complete DSL reference
+- [DNS Setup](docs/dns-setup.md) - DNS record configuration
+- [Load Balancing](docs/load-balancing.md) - Traffic and DNS resolver distribution
+- [Deployment](docs/deployment.md) - Deployment strategies
+- [Operations](docs/operations.md) - Service management, monitoring
+- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
 
 ## Requirements
 
@@ -89,10 +102,10 @@ That's it! Smuggler handles the rest with intelligent defaults.
 
 ## Supported Engines
 
-| Engine | Purpose | When to Use |
-|--------|---------|-------------|
-| **dnstt** | Baseline DNS tunneling | Simple scenarios, testing |
-| **slipstream** | High-performance (Rust) | Production, high-throughput |
+| Engine | Language | Notes |
+|--------|----------|-------|
+| **slipstream** | Rust | QUIC-based, high performance |
+| **dnstt** | Go | Widely deployed, simple |
 
 ## Contributing
 
