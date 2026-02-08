@@ -1,5 +1,5 @@
 ---
-- name: Install nftables package
+- name: Install nftables
   package:
     name: nftables
     state: present

@@ -1,2 +1,2 @@
 ---
-# ssh_proxy: true
+ssh_proxy: false
