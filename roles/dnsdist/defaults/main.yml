@@ -29,3 +29,14 @@ dnsdist_udp_timeout: 2
 dnsdist_max_udp_outstanding: 65535
 dnsdist_tcp_recv_timeout: 2
 dnsdist_tcp_send_timeout: 2
+
+# Prometheus metrics
+dnsdist_enable_metrics: false
+dnsdist_metrics_bind_addr: "127.0.0.1"
+dnsdist_metrics_bind_port: 8083
+dnsdist_metrics_require_auth: false
+dnsdist_metrics_password: "admin"
+# dnsdist_metrics_api_key: ""
+# dnsdist_metrics_acl:
+#   - "0.0.0.0/0"
+#   - "::/0"

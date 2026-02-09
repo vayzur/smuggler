@@ -38,3 +38,13 @@ setUDPTimeout({{ dnsdist_udp_timeout | default(2, true) }})
 setMaxUDPOutstanding({{ dnsdist_max_udp_outstanding | default(65535, true) }})
 setTCPRecvTimeout({{ dnsdist_tcp_recv_timeout | default(2, true) }})
 setTCPSendTimeout({{ dnsdist_tcp_send_timeout | default(2, true) }})
+
+{% if dnsdist_enable_metrics | default(false) %}
+webserver("{{ dnsdist_metrics_bind_addr | default('127.0.0.1', true) }}:{{ dnsdist_metrics_bind_port | default(8083) }}")
+setWebserverConfig({
+  password="{{ dnsdist_metrics_password | default('admin', true) }}",
+  apiKey="{{ dnsdist_metrics_api_key | default('') }}",
+  statsRequireAuthentication={{ dnsdist_metrics_require_auth | default(false) | lower }},
+  acl="{%- for acl in dnsdist_metrics_acl | default(['127.0.0.0/8', '::1/128']) %}{{ acl }}{% if not loop.last %}, {% endif %}{%- endfor %}"
+})
+{% endif %}
