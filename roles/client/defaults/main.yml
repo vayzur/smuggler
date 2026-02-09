@@ -2,7 +2,7 @@
 controller_keys_path: "{{ lookup('env','HOME') }}/.smuggler"
 keys_path: "/opt"
 
-dnstt_client_binary_url: "https://github.com/0xAFz/dnstt/releases/download/latest/dnstt-client-linux-amd64"
+dnstt_client_binary_url: "https://github.com/net2share/dnstt/releases/download/latest/dnstt-client-linux-amd64"
 dnstt_pubkey: "dnstt.pub"
 dnstt_privkey: "dnstt.key"
 
