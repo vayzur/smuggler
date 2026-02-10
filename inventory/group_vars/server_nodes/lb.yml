@@ -1,16 +1,16 @@
 ---
-dnsdist: false
+# dnsdist: false
 
-dnsdist_bind_addr: "0.0.0.0"
-dnsdist_bind_port: 53
+# dnsdist_bind_addr: "0.0.0.0"
+# dnsdist_bind_port: 53
 
 # ACL configuration
-dnsdist_acl:
-  - "0.0.0.0/0"
-  - "::/0"
+# dnsdist_acl:
+#   - "0.0.0.0/0"
+#   - "::/0"
 
 # Upstream DNS servers (for non-tunnel queries)
-dnsdist_upstream_servers: []
+# dnsdist_upstream_servers: []
 # Example:
 # dnsdist_upstream_servers:
 #   - "8.8.8.8:53"
@@ -18,8 +18,19 @@ dnsdist_upstream_servers: []
 
 # Load balancing policy
 # Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
-dnsdist_server_policy: "leastOutstanding"
+# dnsdist_server_policy: "leastOutstanding"
 
 # Action for non-matching queries
 # Options: drop, refuse, forward
-dnsdist_default_action: "drop"
+# dnsdist_default_action: "drop"
+
+# Prometheus metrics
+# dnsdist_metrics: false
+# dnsdist_metrics_bind_addr: "127.0.0.1"
+# dnsdist_metrics_bind_port: 8083
+# dnsdist_metrics_require_auth: false
+# dnsdist_metrics_password: "admin"
+# dnsdist_metrics_api_key: ""
+# dnsdist_metrics_acl:
+#   - "0.0.0.0/0"
+#   - "::/0"
