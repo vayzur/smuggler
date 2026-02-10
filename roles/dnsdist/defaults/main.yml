@@ -31,7 +31,7 @@ dnsdist_tcp_recv_timeout: 2
 dnsdist_tcp_send_timeout: 2
 
 # Prometheus metrics
-dnsdist_enable_metrics: false
+dnsdist_metrics: false
 dnsdist_metrics_bind_addr: "127.0.0.1"
 dnsdist_metrics_bind_port: 8083
 dnsdist_metrics_require_auth: false

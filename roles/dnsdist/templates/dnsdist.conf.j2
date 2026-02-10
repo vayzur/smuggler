@@ -1,12 +1,12 @@
 -- {{ ansible_managed }}
 
 setACL({
-{%- for acl in dnsdist_acl %}
+{%- for acl in dnsdist_acl | default(['0.0.0.0/0', '::/0']) %}
 '{{ acl }}'{% if not loop.last %},{% endif %}
 {%- endfor %}
 })
 
-{% for server in dnsdist_upstream_servers %}
+{% for server in dnsdist_upstream_servers | default([]) %}
 newServer({address="{{ server }}"})
 {% endfor %}
 
@@ -39,7 +39,7 @@ setMaxUDPOutstanding({{ dnsdist_max_udp_outstanding | default(65535, true) }})
 setTCPRecvTimeout({{ dnsdist_tcp_recv_timeout | default(2, true) }})
 setTCPSendTimeout({{ dnsdist_tcp_send_timeout | default(2, true) }})
 
-{% if dnsdist_enable_metrics | default(false) %}
+{% if dnsdist_metrics | default(false) %}
 webserver("{{ dnsdist_metrics_bind_addr | default('127.0.0.1', true) }}:{{ dnsdist_metrics_bind_port | default(8083) }}")
 setWebserverConfig({
   password="{{ dnsdist_metrics_password | default('admin', true) }}",
