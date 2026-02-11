@@ -11,6 +11,6 @@
     owner: root
     group: root
     mode: 0644
+  changed_when: true
   notify: Restart dnsdist
-  tags:
-    - dnsdist-config
+  tags: dnsdist-config
