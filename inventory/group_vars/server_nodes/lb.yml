@@ -10,11 +10,9 @@
 #   - "::/0"
 
 # Upstream DNS servers (for non-tunnel queries)
-# dnsdist_upstream_servers: []
-# Example:
 # dnsdist_upstream_servers:
-#   - "8.8.8.8:53"
-#   - "1.1.1.1:53"
+#   - address: "8.8.8.8:53"
+#   - address: "8.8.4.4:53"
 
 # Load balancing policy
 # Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
