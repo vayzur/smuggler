@@ -1,328 +1,377 @@
 # Load Balancing
 
-Smuggler provides kernel-level load balancing using Linux nftables for high-performance traffic distribution.
+Smuggler has two independent load balancing layers, each serving a different purpose:
 
-## Types of Load Balancing
+- **Client-side traffic LB** — distributes TCP traffic across multiple tunnel instances using nftables (kernel-level)
+- **Client-side DNS LB** — distributes DNS queries across multiple resolvers using DNSdist
+- **Server-side DNS LB** — distributes incoming DNS queries across multiple tunnel server instances using DNSdist
 
-### 1. Traffic Load Balancing
-Distribute client traffic across multiple tunnel servers.
-
-### 2. DNS Resolver Load Balancing
-Distribute DNS queries across multiple resolvers.
+These are all **disabled by default**. You opt in to each one explicitly.
 
 ---
 
-## Traffic Load Balancing
+## Client-Side Traffic Load Balancing
 
-**Location**: `inventory/group_vars/client_nodes/lb.yml`
+When you have multiple tunnel instances running on a client node, the traffic LB distributes incoming TCP connections across them using nftables DNAT rules.
 
-### Configuration
+### How it works
+
+nftables intercepts traffic on configured ports and forwards each connection to one of the tunnel instances based on your chosen policy. When a tunnel becomes unhealthy, the health checker replaces it with a backup address — it does **not** modify nftables rules dynamically. When the tunnel recovers, it takes back its slot.
+
+### Enabling
+
+In `inventory/group_vars/client_nodes/lb.yml`:
+
 ```yaml
----
-## Master switch: enables/disables ALL load balancing features
-load_balancing: true
-
-# Traffic load balancing - distributes client traffic across multiple tunnel servers
-lb:
-  enabled: true  # Enable traffic LB (requires load_balancing: true)
-  type: "hash" # Options: hash, random, roundrobin
-  ports:
-    - "80"
-    - "443"
-    - "8080"
-    - "8443"
-    - "2052-2096"
-    - "9200-9400"
+lb: true
+lb_policy: "hash"        # hash | roundrobin | random
+lb_ports:
+  - "8080"
+  - "10000-10200"
 ```
 
-### Load Balancing Algorithms
+Then in each tunnel definition, set `client.lb.enabled: true` and define a backup:
 
-| Type | Behavior | Use Case |
-|------|----------|----------|
-| `hash` | Consistent hashing by source IP/port | Sticky sessions, maintain connection affinity |
-| `random` | Random distribution | Simple load spreading |
-| `roundrobin` | Sequential distribution | Even distribution across tunnels |
-
-### How It Works
-
-1. Client applications connect to local proxy (e.g., `127.0.0.1:7000`)
-2. nftables intercepts outbound traffic on configured ports
-3. Traffic is distributed across active tunnel endpoints
-4. Kernel maintains connection state for return traffic
-
-### Requirements
-
-**Critical**: All server-side backend services must be identical.
-
-✅ **Valid configurations:**
-- Same HTTP proxy on all servers
-- Same SOCKS5 proxy on all servers
-- Same SSH tunnel on all servers
-
-❌ **Invalid configurations:**
-- Shadowsocks on server1, SSH SOCKS on server2
-- Different proxy types across servers
-- Inconsistent backend configurations
-
-### Example: Load Balance Across 2 Tunnels
-
-**tunnels.yml:**
 ```yaml
 tunnels:
   - name: tun0
     client_node: lb0
-    server_node: server1
+    server_node: node0
     engine: slipstream
-    domain: t1.example.com
+    domain: t.example.com
     client:
-      bind_port: 8080
-    server:
-      target_port: 3128  # proxy
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 5202
+      bind_addr: 127.0.0.1
+      bind_port: 5200
 
   - name: tun1
     client_node: lb0
-    server_node: server2
+    server_node: node1
     engine: slipstream
     domain: t2.example.com
     client:
-      bind_port: 8081
-    server:
-      target_port: 3128  # Must be same proxy
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 5203
+      bind_addr: 127.0.0.1
+      bind_port: 5201
 ```
 
-**lb.yml:**
-```yaml
-load_balancing: true
+### Rules when using traffic LB
 
-lb:
-  enabled: true
-  type: "roundrobin"
-  ports:
-    - "80"
-    - "443"
-```
+- `client.bind_addr` **must** be `127.0.0.1` for all participating tunnels
+- Each tunnel **must** have a unique `client.bind_port`
+- Each tunnel **must** define `client.lb.backup_addr` and `client.lb.backup_port`
+- All server-side proxy backends **must be consistent** — you cannot mix SSH proxy on one server and Xray on another when load balancing across them
 
-**Result**: traffic automatically distributed between `tun0` and `tun1`.
+### LB policies
+
+| Policy | Behavior |
+|--------|----------|
+| `hash` | Consistent hashing on source IP + port. Same client always hits the same tunnel. |
+| `roundrobin` | Increments sequentially across tunnels. |
+| `random` | Random selection per connection. |
+
+### Default values
+
+| Key | Default |
+|-----|---------|
+| `lb` | `false` |
+| `lb_policy` | `hash` |
+| `lb_ports` | `["8080", "10000-10200"]` |
+| `client.lb.enabled` | `false` |
+| `client.lb.backup_addr` | `127.0.0.1` |
+| `client.lb.backup_port` | *(required when lb enabled)* |
 
 ---
 
-## DNS Resolver Load Balancing
+## Client-Side DNS Query Load Balancing
 
-Distribute DNS queries across multiple resolvers at the kernel level.
+Distributes DNS queries across multiple upstream resolvers. Useful when a single resolver is unreliable or rate-limited.
 
-**Location**: `inventory/group_vars/client_nodes/lb.yml`
+Uses DNSdist running locally on the client node.
 
-### Configuration
+### Enabling
+
+In `inventory/group_vars/client_nodes/lb.yml`:
+
 ```yaml
----
-# DNS resolver load balancing - distributes DNS queries across multiple resolvers
-dns_lb:
-  enabled: true  # Enable DNS LB (requires load_balancing: true)
-  type: "roundrobin" # Options: hash, random, roundrobin
-  resolvers:
-    - "1.1.1.1"
-    - "8.8.8.8"
-    - "9.9.9.9"
+dnsdist: true
+dnsdist_bind_addr: "127.0.0.1"
+dnsdist_bind_port: 5300
+
+dnsdist_upstream_servers:
+  - address: "1.1.1.1:53"
+  - address: "8.8.8.8:53"
+  - address: "9.9.9.9:53"
 ```
 
-### How It Works
+Then in your tunnel definitions, point `dns_resolver` at DNSdist:
 
-1. Per-tunnel `dns_resolver` is ignored when DNS LB is enabled
-2. All tunnels use resolvers from `dns_lb.resolvers` list
-3. Kernel distributes queries based on `dns_lb.type`
-4. Connection tracking ensures consistent resolver per source port
-
-### When to Use
-
-✅ **Good use cases:**
-- Redundancy: if one resolver fails, others continue
-- Avoid rate limiting from single resolver
-- Geographic distribution for lower latency
-- Bypass resolver-specific filtering
-
-❌ **Not recommended:**
-- Single tunnel with low traffic
-- When resolver consistency is required
-
-### Example Configuration
-
-**tunnels.yml:**
 ```yaml
 tunnels:
   - name: tun0
-    client_node: client1
-    server_node: server1
+    client_node: lb0
+    server_node: node0
     engine: slipstream
-    domain: t1.example.com
-    # No dns_resolver specified - will use DNS LB
+    domain: t.example.com
+    client:
+      dns_resolver: "127.0.0.1:5300"
+```
+
+### Using multiple resolvers per tunnel (slipstream only)
+
+Slipstream supports a list of resolvers natively. dnstt does not — it accepts only one resolver string.
+
+```yaml
+# slipstream only
+client:
+  dns_resolver:
+    - "1.1.1.1:53"
+    - "8.8.8.8:53"
+    - "9.9.9.9:53"
+```
+
+For dnstt with multiple resolvers, use DNSdist and point `dns_resolver` at it.
+
+### DNSdist server options
+
+Each entry in `dnsdist_upstream_servers` supports these fields (all optional, shown with defaults):
+
+```yaml
+dnsdist_upstream_servers:
+  - address: "8.8.8.8:53"
+    check_interval: 2          # seconds between health checks
+    check_timeout: 1000        # ms before check is considered failed
+    check_type: "TXT"          # record type used for health checks
+    max_check_failures: 1      # failures before marking down
+    must_resolve: true         # must return a valid answer
+    use_client_subnet: false   # pass client IP in EDNS
+    tcp_only: false            # force TCP for all queries
+    check_tcp: false           # health check over TCP
+    dscp: 0                    # DSCP marking
+    reconnect_on_up: false     # reconnect TCP on server recovery
+    rise: 1                    # successful checks to mark server up
+```
+
+### LB policies for DNS
+
+| Policy | Behavior |
+|--------|----------|
+| `leastOutstanding` | Routes to server with fewest in-flight queries (default) |
+| `roundrobin` | Rotates through servers in order |
+| `firstAvailable` | Always uses first responsive server |
+| `wrandom` | Weighted random based on `weight` |
+| `chashed` | Consistent hashing |
+
+### Default values (client DNSdist)
+
+| Key | Default |
+|-----|---------|
+| `dnsdist` | `false` |
+| `dnsdist_bind_addr` | `127.0.0.1` |
+| `dnsdist_bind_port` | `5300` |
+| `dnsdist_server_policy` | `leastOutstanding` |
+| `dnsdist_acl` | `["127.0.0.0/8"]` |
+| `dnsdist_udp_timeout` | `2` |
+| `dnsdist_max_udp_outstanding` | `65535` |
+| `dnsdist_tcp_recv_timeout` | `2` |
+| `dnsdist_tcp_send_timeout` | `2` |
+| `dnsdist_metrics` | `false` |
+| `dnsdist_metrics_bind_addr` | `127.0.0.1` |
+| `dnsdist_metrics_bind_port` | `8083` |
+| `dnsdist_metrics_require_auth` | `false` |
+| `dnsdist_metrics_password` | `admin` |
+
+---
+
+## Server-Side DNS Load Balancing
+
+When you run multiple tunnel instances on the same server (or across servers per domain), DNSdist on port 53 distributes queries to each instance.
+
+Each tunnel instance must **not** bind to port 53 directly — DNSdist owns port 53.
+
+### Enabling
+
+In `inventory/group_vars/server_nodes/lb.yml`:
+
+```yaml
+dnsdist: true
+dnsdist_bind_addr: "0.0.0.0"
+dnsdist_bind_port: 53
+dnsdist_server_policy: "leastOutstanding"
+```
+
+With server-side LB enabled, tunnel server instances must bind to `127.0.0.1` on distinct ports:
+
+```yaml
+tunnels:
+  - name: tun0
+    client_node: lb0
+    server_node: node0
+    engine: slipstream
+    domain: t.example.com
+    server:
+      bind_addr: "127.0.0.1"
+      bind_port: 5300
 
   - name: tun1
-    client_node: client1
-    server_node: server2
+    client_node: lb0
+    server_node: node0
     engine: dnstt
-    domain: t2.example.com
-    # No dns_resolver specified - will use DNS LB
+    domain: d.example.com
+    server:
+      bind_addr: "127.0.0.1"
+      bind_port: 5301
 ```
 
-**lb.yml:**
+DNSdist automatically routes queries for each domain to the correct pool of tunnel instances. Queries that don't match any tunnel domain are dropped by default.
+
+### Domain-based routing
+
+DNSdist groups tunnel instances by domain. All instances sharing a domain go into the same pool and queries for that domain are load balanced across them. If you have multiple tunnels on the same domain, they all receive traffic.
+
+### Default action for non-matching queries
+
+| Value | Behavior |
+|-------|----------|
+| `drop` | Silently drop (default) |
+| `refuse` | Return REFUSED |
+| `forward` | Forward to upstream servers |
+
+### Upstream servers (for forwarding)
+
+If `dnsdist_default_action: "forward"`, you should define upstream servers for non-tunnel queries:
+
 ```yaml
-dns_lb:
-  enabled: true
-  type: "hash"
-  resolvers:
-    - "1.1.1.1"
-    - "8.8.8.8"
-    - "9.9.9.9"
+dnsdist_upstream_servers:
+  - address: "8.8.8.8:53"
+  - address: "8.8.4.4:53"
 ```
 
-**Result**: Both tunnels distribute queries across Cloudflare, Google, and Quad9.
+### Default values (server DNSdist)
 
-### Important Notes
+| Key | Default |
+|-----|---------|
+| `dnsdist` | `false` |
+| `dnsdist_bind_addr` | `0.0.0.0` |
+| `dnsdist_bind_port` | `53` |
+| `dnsdist_server_policy` | `leastOutstanding` |
+| `dnsdist_acl` | `["0.0.0.0/0", "::/0"]` |
+| `dnsdist_default_action` | `drop` |
+| `dnsdist_udp_timeout` | `2` |
+| `dnsdist_max_udp_outstanding` | `65535` |
+| `dnsdist_tcp_recv_timeout` | `2` |
+| `dnsdist_tcp_send_timeout` | `2` |
+| `dnsdist_metrics` | `false` |
+| `dnsdist_metrics_bind_addr` | `127.0.0.1` |
+| `dnsdist_metrics_bind_port` | `8083` |
+| `dnsdist_metrics_require_auth` | `false` |
+| `dnsdist_metrics_password` | `admin` |
 
-⚠️ **Resolver changes require restart:**
-- nftables conntrack maintains resolver mapping per source port
-- Changing resolvers won't affect existing connections
-- Restart tunnel services to apply new resolvers:
-```bash
-  systemctl restart 'smuggler@*'
-```
+### Important note on dnsdist scope
 
-⚠️ **Default resolver:**
-- If DNS LB is disabled and no per-tunnel `dns_resolver` is set, default is `8.8.8.8:53`
+If you set `dnsdist: true` in `inventory/group_vars/all/`, it enables DNSdist on **both** client and server nodes. This will likely cause port conflicts. Set it per group:
+
+- `inventory/group_vars/client_nodes/lb.yml` for client DNS LB
+- `inventory/group_vars/server_nodes/lb.yml` for server DNS LB
 
 ---
 
-## Combining Both Load Balancing Types
+## Prometheus Metrics
 
-You can use both traffic and DNS resolver load balancing simultaneously:
+Both client and server DNSdist instances support a metrics endpoint. Disabled by default.
+
 ```yaml
----
-load_balancing: true
-
-# Traffic load balancing
-lb:
-  enabled: true
-  type: "roundrobin"
-  ports:
-    - "80"
-    - "443"
-    - "8080"
-
-# DNS resolver load balancing
-dns_lb:
-  enabled: true
-  type: "hash"
-  resolvers:
-    - "1.1.1.1"
-    - "8.8.8.8"
-    - "9.9.9.9"
-```
-
-**Result:**
-- Client traffic on ports 80/443/8080 distributed across tunnels
-- DNS queries distributed across 3 resolvers
-
----
-
-## Verification
-
-### Check Traffic Load Balancing Rules
-```bash
-# View nftables rules
-sudo nft list ruleset
-
-# Check active connections
-sudo conntrack -L | grep DNAT
-```
-
-### Check DNS Resolver Load Balancing
-```bash
-# Monitor DNS queries
-sudo tcpdump -i any -n 'udp port 53'
-
-# Generate test traffic
-for i in {1..10}; do
-  dig @localhost test$i.t.example.com
-done
-
-# Should see queries distributed across resolvers
-```
-
-### Monitor Tunnel Traffic
-```bash
-# Real-time traffic per tunnel
-watch -n 1 'sudo iftop -i tun+'
-
-# Connection count per tunnel
-watch -n 1 'sudo netstat -tn | grep :7000 | wc -l'
+dnsdist_metrics: true
+dnsdist_metrics_bind_addr: "127.0.0.1"
+dnsdist_metrics_bind_port: 8083
+dnsdist_metrics_require_auth: false
+dnsdist_metrics_password: "admin"
+# dnsdist_metrics_api_key: ""
+# dnsdist_metrics_acl:
+#   - "0.0.0.0/0"
 ```
 
 ---
 
-## Troubleshooting
+## Production Example: N:N With Full LB
 
-### Traffic Not Load Balancing
+Multiple clients, multiple servers, traffic LB on clients, DNS LB on servers.
 
-**Check:**
-```bash
-# Verify nftables rules exist
-sudo nft list table ip smuggler_lb
-
-# Check if tunnels are running
-systemctl status 'smuggler@*'
+**`inventory/group_vars/server_nodes/lb.yml`:**
+```yaml
+dnsdist: true
+dnsdist_server_policy: "leastOutstanding"
+dnsdist_default_action: "drop"
 ```
 
-**Solutions:**
-- Ensure `lb.enabled: true` in `lb.yml`
-- Verify all tunnels are healthy
-- Restart load balancing service: `systemctl restart lb-smuggler.service`
+**`inventory/group_vars/client_nodes/lb.yml`:**
+```yaml
+lb: true
+lb_policy: "hash"
+lb_ports:
+  - "8080"
+  - "443"
 
-### DNS Queries Using Wrong Resolver
-
-**Check:**
-```bash
-# Monitor DNS traffic
-sudo tcpdump -i any -n 'udp port 53' -v
-
-# Check resolver in tunnel logs
-journalctl -u smuggler@tun0 | grep resolver
+dnsdist: true
+dnsdist_bind_port: 5300
+dnsdist_upstream_servers:
+  - address: "1.1.1.1:53"
+  - address: "8.8.8.8:53"
+  - address: "9.9.9.9:53"
 ```
 
-**Solutions:**
-- Restart tunnels: `systemctl restart 'smuggler@*'`
-- Verify `dns_lb.enabled: true` in `lb.yml`
-- Check resolver list in `dns_lb.resolvers`
+**`inventory/group_vars/all/tunnels.yml`:**
+```yaml
+tunnels:
+  - name: tun0
+    client_node: lb0
+    server_node: node0
+    engine: slipstream
+    domain: t.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 5202
+      bind_addr: 127.0.0.1
+      bind_port: 5200
+      dns_resolver: "127.0.0.1:5300"
+      health_check:
+        enabled: true
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 5200
+        test_url: "http://www.google.com/gen_204"
+    server:
+      bind_addr: "127.0.0.1"
+      bind_port: 5300
 
----
-
-## Best Practices
-
-1. **Test resolvers before deployment**
-```bash
-   dig @1.1.1.1 test.t.example.com
-   dig @8.8.8.8 test.t.example.com
+  - name: tun1
+    client_node: lb0
+    server_node: node1
+    engine: slipstream
+    domain: t.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 5203
+      bind_addr: 127.0.0.1
+      bind_port: 5201
+      dns_resolver: "127.0.0.1:5300"
+      health_check:
+        enabled: true
+        proxy_type: http
+        proxy_addr: 127.0.0.1
+        proxy_port: 5201
+        test_url: "http://www.google.com/gen_204"
+    server:
+      bind_addr: "127.0.0.1"
+      bind_port: 5301
 ```
-
-2. **Use `hash` for DNS LB**
-   - Provides better cache hit rates
-   - More predictable behavior
-
-3. **Use `roundrobin` for traffic LB**
-   - Even distribution
-   - Simple and reliable
-
-4. **Monitor connection distribution**
-```bash
-   watch -n 5 'sudo netstat -tn | grep ":808[0-9]" | awk "{print \$4}" | sort | uniq -c'
-```
-
-5. **Plan for resolver failures**
-   - Use at least 3 resolvers
-   - Test failover behavior
-
----
-
-## Next Steps
-
-- [Deploy load-balanced infrastructure](deployment.md)
-- [Monitor tunnel operations](operations.md)

@@ -1,232 +1,91 @@
 # DNS Setup
 
-DNS tunnels require specific DNS records to route queries to your server.
+For DNS tunneling to work, your domain's DNS queries must be delegated to your server. The server runs the tunnel engine which answers those queries.
 
-## Prerequisites
+---
 
-- A domain you own (e.g., `example.com`)
-- Access to DNS management (registrar or DNS provider)
-- Static IP address for your tunnel server
+## Required DNS records
 
-## Required DNS Records
+For each tunnel domain (e.g. `t.example.com`):
 
-For each tunnel, you need two records:
-
-| Record Type | Purpose |
-|-------------|---------|
-| **A** | Points nameserver subdomain to your server IP |
-| **NS** | Delegates tunnel subdomain to your nameserver |
-
-## Single Tunnel Example
-
-**Configuration:**
-```yaml
-tunnels:
-  - name: tun0
-    server_node: server1  # IP: 203.0.113.10
-    domain: t.example.com
+```
+t.example.com.     NS    ns.example.com.
+ns.example.com.    A     <your_server_public_ip>
 ```
 
-**DNS Records:**
+This tells the internet: "queries for `t.example.com` should go to `ns.example.com`, which lives at your server's IP."
 
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
-| A | `ns.example.com` | `203.0.113.10` | 300 |
-| NS | `t.example.com` | `ns.example.com` | 300 |
+You add these records at your **domain registrar or authoritative DNS provider** for `example.com` — not on your server.
 
-**Explanation:**
-1. `ns.example.com` → Points to server IP `203.0.113.10`
-2. `t.example.com` → Delegates DNS queries to `ns.example.com`
+---
 
-## Multiple Tunnels Example
+## How to add them
 
-**Configuration:**
-```yaml
-tunnels:
-  - name: tun0
-    server_node: server1  # IP: 203.0.113.10
-    domain: fast.example.com
-  
-  - name: tun1
-    server_node: server2  # IP: 203.0.113.11
-    domain: backup.example.com
+The exact steps depend on your DNS provider, but you're adding two records:
+
+1. An `NS` record on `t.example.com` pointing to `ns.example.com`
+2. An `A` record on `ns.example.com` pointing to your server's IP
+
+Some providers call the second record a "glue record." If your provider doesn't let you add a glue record for a subdomain, use a different hostname for the nameserver that's outside the delegated zone:
+
 ```
-
-**DNS Records:**
-
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
-| A | `ns1.example.com` | `203.0.113.10` | 300 |
-| A | `ns2.example.com` | `203.0.113.11` | 300 |
-| NS | `fast.example.com` | `ns1.example.com` | 300 |
-| NS | `backup.example.com` | `ns2.example.com` | 300 |
-
-## Step-by-Step Setup
-
-### 1. Find Your Server IP
-```bash
-# On your server
-curl ifconfig.me
-# or
-ip addr show
-```
-
-### 2. Create A Record (Nameserver)
-
-In your DNS provider's control panel:
-
-- **Record Type**: A
-- **Name**: `ns` (or `ns1`, `tns`, etc.)
-- **Value**: Your server IP (e.g., `203.0.113.10`)
-- **TTL**: `300` (5 minutes)
-
-### 3. Create NS Record (Delegation)
-
-- **Record Type**: NS
-- **Name**: Your tunnel subdomain (e.g., `t`)
-- **Value**: Your nameserver (e.g., `ns.example.com`)
-- **TTL**: `300`
-
-### 4. Verify DNS Propagation
-```bash
-# Check NS record
-dig NS t.example.com
-
-# Expected output:
-# t.example.com. 300 IN NS ns.example.com.
-
-# Check if server responds
-dig @ns.example.com test.t.example.com
-
-# Should see your server IP in AUTHORITY section
-```
-
-## Testing DNS Resolution
-
-### From Client Side
-```bash
-# Test DNS query through tunnel domain
-dig @8.8.8.8 random-query.t.example.com
-
-# Should return NXDOMAIN or NOERROR (not SERVFAIL)
-```
-
-### From Server Side
-
-Monitor incoming DNS traffic:
-```bash
-# On server
-sudo tcpdump -i any -n udp port 53
-
-# Generate test query from another machine
-dig @your-server-ip test.t.example.com
-```
-
-## Common DNS Providers
-
-### Cloudflare
-
-1. Log into Cloudflare dashboard
-2. Select your domain
-3. Go to **DNS** → **Records**
-4. Click **Add record**
-5. Add A and NS records as shown above
-
-### Namecheap
-
-1. Log into Namecheap account
-2. **Domain List** → Manage
-3. **Advanced DNS** tab
-4. Add records using **Add New Record** button
-
-### AWS Route 53
-```bash
-# Create hosted zone (if needed)
-aws route53 create-hosted-zone --name example.com
-
-# Create A record
-aws route53 change-resource-record-sets --hosted-zone-id ZONE_ID --change-batch '{
-  "Changes": [{
-    "Action": "CREATE",
-    "ResourceRecordSet": {
-      "Name": "ns.example.com",
-      "Type": "A",
-      "TTL": 300,
-      "ResourceRecords": [{"Value": "203.0.113.10"}]
-    }
-  }]
-}'
-
-# Create NS record
-aws route53 change-resource-record-sets --hosted-zone-id ZONE_ID --change-batch '{
-  "Changes": [{
-    "Action": "CREATE",
-    "ResourceRecordSet": {
-      "Name": "t.example.com",
-      "Type": "NS",
-      "TTL": 300,
-      "ResourceRecords": [{"Value": "ns.example.com"}]
-    }
-  }]
-}'
-```
-
-## Troubleshooting
-
-### NS Record Not Propagating
-
-**Check:**
-```bash
-dig NS t.example.com @8.8.8.8
-dig NS t.example.com @1.1.1.1
-```
-
-**Solutions:**
-- Wait 5-15 minutes for DNS propagation
-- Clear DNS cache: `sudo systemd-resolve --flush-caches`
-- Lower TTL to 60 seconds temporarily
-
-### Server Not Responding to DNS
-
-**Check server firewall:**
-```bash
-# Allow UDP port 53
-sudo ufw allow 53/udp
-# or
-sudo iptables -A INPUT -p udp --dport 53 -j ACCEPT
-```
-
-**Check if server is listening:**
-```bash
-sudo netstat -ulnp | grep :53
-```
-
-### SERVFAIL Responses
-
-This usually means NS delegation is incorrect.
-
-**Verify:**
-```bash
-# Should return your NS record
-dig NS t.example.com
-
-# Should return same result
-dig NS t.example.com @ns.example.com
-```
-
-## DNS Resolver Compatibility
-
-Some DNS resolvers block tunneling. Test before deployment:
-
-**Test a resolver:**
-```bash
-dig @resolver-ip random-subdomain.t.example.com
-# Should return NXDOMAIN, not SERVFAIL
+t.example.com.      NS    tunnel-ns.example.com.
+tunnel-ns.example.com.  A  <your_server_public_ip>
 ```
 
 ---
 
-## Next Steps
+## Multiple domains
 
-- [Configure load balancing](load-balancing.md)
-- [Deploy tunnels](deployment.md)
+Each tunnel can use a different domain. Add NS + A records for each one:
+
+```
+s.example.com.     NS    ns1.example.com.
+ns1.example.com.   A     203.0.113.10
+
+d.example.com.     NS    ns2.example.com.
+ns2.example.com.   A     203.0.113.10
+```
+
+Both can point at the same server IP. Smuggler (or DNSdist) routes queries to the correct tunnel engine based on the domain.
+
+---
+
+## Verifying DNS delegation
+
+After adding records, confirm delegation is working from a machine that is **not** your server:
+
+```bash
+# Check NS delegation
+dig NS t.example.com
+
+# Check that queries reach your server
+dig A www.google.com @ns.example.com
+```
+
+The first command should return your NS record. The second will likely fail (your server only handles tunnel queries, not general DNS) but the important thing is that the query reaches your server.
+
+To check if your server is actually receiving queries:
+
+```bash
+# On the server (requires tcpdump)
+tcpdump -i any -n port 53
+```
+
+Then send a DNS query for the domain from another machine and watch for it in the capture.
+
+---
+
+## Server-side: what listens on port 53
+
+- **Without server LB**: The tunnel engine (slipstream or dnstt) binds directly to `0.0.0.0:53`
+- **With server LB** (`dnsdist: true`): DNSdist binds to `0.0.0.0:53` and forwards to tunnel instances on loopback
+
+Make sure nothing else is using port 53 on the server. Common conflicts: `systemd-resolved`, a pre-existing BIND/Unbound install.
+
+```bash
+# Check what's on port 53
+ss -ulnp | grep ':53'
+```
+
+If `systemd-resolved` is running, disable it or change its listen address before deploying.

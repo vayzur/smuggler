@@ -1,69 +1,102 @@
 # Getting Started
 
-This guide will help you set up Smuggler from scratch.
+## Requirements
 
-## Prerequisites
+**Control machine (where you run Ansible):**
+- Ansible >= 2.10
+- SSH client
 
-### Control Machine (Your Computer)
+**Target nodes (client and server):**
+- Debian or RedHat-based Linux
+- Python 3
+- SSH access with sudo privileges
 
-- **Operating System**: Linux, macOS, or WSL2
-- **Software**:
-  - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) >= 2.10
-  - SSH client
-  - Git
-
-**Install Ansible:**
-```bash
-# Ubuntu/Debian
-sudo apt update && sudo apt install ansible
-
-# macOS
-brew install ansible
-
-# Using pip
-pip install ansible
-```
-
-### Target Nodes (Remote Servers)
-
-- **Operating System**: Debian/RedHat-based Linux
-- **Requirements**:
-  - SSH access with sudo/root privileges
-  - Python 3 installed
-  - Minimum 512MB RAM
-  - Open port 53 (UDP) on server nodes
+---
 
 ## Installation
 
-### 1. Clone Repository
 ```bash
 git clone https://github.com/vayzur/smuggler.git
 cd smuggler
 ```
 
-### 2. Verify Ansible
-```bash
-ansible --version
-# Should show version 2.10 or higher
+---
+
+## Minimal Setup
+
+### 1. Define your hosts
+
+`inventory/hosts.yml`:
+
+```yaml
+all:
+  hosts:
+    server1:
+      ansible_host: 203.0.113.10
+    client1:
+      ansible_host: 198.51.100.5
+  children:
+    server_nodes:
+      hosts:
+        server1:
+    client_nodes:
+      hosts:
+        client1:
 ```
 
-### 3. Test SSH Connectivity
-```bash
-# Test connection to your server
-ssh root@your-server-ip
+### 2. Define your tunnels
 
-# If using SSH keys, ensure they're loaded
-ssh-add ~/.ssh/id_rsa
+`inventory/group_vars/all/tunnels.yml`:
+
+```yaml
+tunnels:
+  - name: tun0
+    client_node: client1
+    server_node: server1
+    engine: slipstream
+    domain: t.example.com
 ```
 
-## Binary Management
+### 3. Configure DNS
 
-Smuggler automatically downloads precompiled binaries from GitHub releases during deployment. No manual binary placement is required.
+Before deploying, add these DNS records for your domain:
 
-Binaries are downloaded to `/usr/local/bin/` on target nodes during the first deployment.
+```
+t.example.com.     NS    ns.example.com.
+ns.example.com.    A     <server_public_ip>
+```
 
-## Next Steps
+See [dns-setup.md](dns-setup.md) for details.
 
-1. [Configure your infrastructure](configuration.md)
-2. [Set up DNS records](dns-setup.md)
-3. [Deploy tunnels](deployment.md)
+### 4. Deploy
+
+```bash
+ansible-playbook -i inventory/hosts.yml smuggler.yml
+```
+
+That's it. Smuggler will:
+- Download and install the engine binaries
+- Generate and distribute keys
+- Create and start systemd services
+- Configure the tunnel on both client and server
+
+---
+
+## Verify it's working
+
+On the client node, test the tunnel as an HTTP proxy:
+
+```bash
+curl -x http://127.0.0.1:5201 http://www.google.com/gen_204
+```
+
+A `204` response means the tunnel is up.
+
+---
+
+## Next steps
+
+- Add health checking → [health-check.md](health-check.md)
+- Load balance across multiple tunnels → [load-balancing.md](load-balancing.md)
+- Use an SSH proxy on the server → [proxy.md](proxy.md)
+- Full configuration reference → [configuration.md](configuration.md)
