@@ -1,32 +1,74 @@
-## Master switch for all load balancing features
-load_balancing: false
-
-# Traffic load balancer - distributes client traffic across multiple tunnel servers
-lb:
-  enabled: false        # Enable traffic LB (requires load_balancing: true)
-  type: "hash"          # Options: hash, random, roundrobin
-  ports:                # Ports to load balance
-    - "80"
-    - "8080"
-    - "8880"
-    - "2052"
-    - "2082"
-    - "2086"
-    - "2095"
-    - "443"
-    - "2053"
-    - "2083"
-    - "2087"
-    - "2096"
-    - "8443"
-    - "9200-9400"
-    - "10000-10200"
+---
+# Traffic load balancer - distributes client traffic across multiple tunnels
+lb: false
+lb_policy: "hash" # Options: hash, roundrobin, random
+lb_ports:
+  - "8080"
+  - "10000-10200"
 
 # DNS load balancer - distributes DNS queries across multiple resolvers
-dns_lb:
-  enabled: false        # Enable DNS LB (requires load_balancing: true)
-  type: "roundrobin"    # Options: hash, random, roundrobin
-  resolvers:             # List of DNS resolvers
-    - "1.1.1.1"
-    - "8.8.8.8"
-    - "9.9.9.9"
+dnsdist: false
+
+dnsdist_bind_addr: "127.0.0.1"
+dnsdist_bind_port: 5300
+
+# ACL configuration
+dnsdist_acl:
+  - "127.0.0.0/8"
+  # - "10.0.0.0/8"
+  # - "100.64.0.0/10"
+  # - "169.254.0.0/16"
+  # - "192.168.0.0/16"
+  # - "172.16.0.0/12"
+  # - "::1/128"
+  # - "fc00::/7"
+  # - "fe80::/10"
+
+# Upstream DNS servers
+dnsdist_upstream_servers:
+  - address: "8.8.8.8:53"
+    check_interval: 2
+    check_timeout: 1000
+    check_type: "TXT"
+    max_check_failures: 1
+    must_resolve: true
+    use_client_subnet: false
+    tcp_only: false
+    check_tcp: false
+    dscp: 0
+    reconnect_on_up: false
+    rise: 1
+
+  - address: "8.8.4.4:53"
+    check_interval: 2
+    check_timeout: 1000
+    check_type: "TXT"
+    max_check_failures: 1
+    must_resolve: true
+    use_client_subnet: false
+    tcp_only: true
+    check_tcp: true
+    dscp: 0
+    reconnect_on_up: true
+    rise: 1
+
+# Load balancing policy
+# Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
+dnsdist_server_policy: "leastOutstanding"
+
+# Performance
+dnsdist_udp_timeout: 2
+dnsdist_max_udp_outstanding: 65535
+dnsdist_tcp_recv_timeout: 2
+dnsdist_tcp_send_timeout: 2
+
+# Prometheus metrics
+dnsdist_metrics: false
+dnsdist_metrics_bind_addr: "127.0.0.1"
+dnsdist_metrics_bind_port: 8083
+dnsdist_metrics_require_auth: false
+dnsdist_metrics_password: "admin"
+# dnsdist_metrics_api_key: ""
+# dnsdist_metrics_acl:
+#   - "0.0.0.0/0"
+#   - "::/0"
