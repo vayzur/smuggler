@@ -1,56 +1,32 @@
 # Smuggler
 
-**Production-grade DNS tunneling automation framework powered by Ansible**
+Production-grade DNS tunneling automation framework powered by Ansible.
 
-Smuggler automates the deployment and management of DNS tunnels across distributed networks. Define your infrastructure in YAML, deploy with one command.
+Define your infrastructure in YAML, deploy with one command.
 
-## What is DNS Tunneling?
+## What is DNS tunneling?
 
-DNS tunneling encapsulates traffic inside DNS queries and responses, enabling you to:
-- Bypass restrictive firewalls that only allow DNS traffic
-- Navigate censored environments where VPNs are blocked
-- Establish covert communication channels using legitimate DNS protocols
+DNS tunneling encapsulates traffic inside DNS queries and responses — useful when only DNS traffic is allowed through a network or VPNs are blocked.
 
-## Key Features
+## Quick start
 
-### Client-Side
-- **End-to-End Health Checking**: Continuous connectivity verification with automatic failover
-- **Fast Connection Recovery**: Self-healing tunnels with rapid reconnection
-- **Kernel-Level Load Balancing**: nftables-powered traffic distribution (hash, random, roundrobin)
-- **DNS Resolver Load Balancing**: Distribute queries across multiple DNS servers
-- **Self-Healing**: Automatic recovery from connection failures
-
-### Server-Side
-- **Multi-Engine Support**: Choose between `dnstt` or `slipstream` backends
-- **Multi-Instance Load Balancing**: dnsdist-powered distribution across tunnel instances
-- **Multi-Domain Support**: Run multiple tunnels with different domains on same server
-- **Built-in SSH Proxies**: Fast tunnel setup without external proxy configuration
-- **Zone-Based DNS Routing**: Intelligent query forwarding per domain
-
-### Infrastructure
-- **Declarative Configuration**: Define entire infrastructure in simple YAML
-- **Systemd Integration**: Each tunnel runs as an independent managed service
-- **Kernel & Runtime Optimization**: Tuned for maximum performance
-- **Flexible Architecture**: Support for 1:N, N:1, and N:N deployment patterns
-- **Full Ansible Automation**: One-command deployment and management
-
-## Quick Start
 ```bash
-# Clone repository
 git clone https://github.com/vayzur/smuggler.git
 cd smuggler
 
-# Configure infrastructure
+# Define hosts
 vim inventory/hosts.yml
+
+# Define tunnels
 vim inventory/group_vars/all/tunnels.yml
 
 # Deploy
 ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
 
-## Minimal Example
+## Minimal example
 
-**hosts.yml:**
+**`inventory/hosts.yml`:**
 ```yaml
 all:
   hosts:
@@ -67,7 +43,7 @@ all:
         client1:
 ```
 
-**tunnels.yml:**
+**`inventory/group_vars/all/tunnels.yml`:**
 ```yaml
 tunnels:
   - name: tun0
@@ -77,35 +53,38 @@ tunnels:
     domain: t.example.com
 ```
 
-That's it! Smuggler handles the rest with intelligent defaults.
+Smuggler handles the rest with defaults.
 
-## Documentation
-
-- [Getting Started](docs/getting-started.md) - Prerequisites, installation
-- [Configuration Guide](docs/configuration.md) - Complete DSL reference
-- [DNS Setup](docs/dns-setup.md) - DNS record configuration
-- [Load Balancing](docs/load-balancing.md) - Traffic and DNS resolver distribution
-- [Deployment](docs/deployment.md) - Deployment strategies
-- [Operations](docs/operations.md) - Service management, monitoring
-- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
-
-## Requirements
-
-**Control Machine:**
-- Ansible >= 2.10
-- SSH client
-
-**Target Nodes:**
-- Debian/RedHat-based Linux
-- Python 3
-- SSH access with sudo privileges
-
-## Supported Engines
+## Engines
 
 | Engine | Language | Notes |
 |--------|----------|-------|
-| **slipstream** | Rust | QUIC-based, high performance |
-| **dnstt** | Go | Widely deployed, simple |
+| `slipstream` | Rust | QUIC-based, high performance |
+| `dnstt` | Go | UDP/DoH/DoT, widely deployed |
+
+## Features
+
+**Client:** health checking, automatic failover, kernel-level traffic load balancing (nftables), DNS resolver load balancing (DNSdist)
+
+**Server:** multi-instance and multi-domain load balancing (DNSdist), built-in SSH SOCKS proxies, zone-based query routing
+
+**Infrastructure:** declarative YAML config, systemd-managed services, 1:N / N:1 / N:N deployment patterns
+
+## Requirements
+
+**Control machine:** Ansible >= 2.10, SSH client
+
+**Target nodes:** Debian/RedHat-based Linux, Python 3, SSH access with sudo
+
+## Documentation
+
+- [Getting Started](docs/getting-started.md)
+- [DNS Setup](docs/dns-setup.md)
+- [Configuration Reference](docs/configuration.md)
+- [Load Balancing](docs/load-balancing.md)
+- [Health Checking](docs/health-check.md)
+- [SSH Proxies](docs/proxy.md)
+- [Operations](docs/operations.md)
 
 ## Contributing
 
