@@ -1,0 +1,16 @@
+---
+- name: Install dnsdist
+  package:
+    name: dnsdist
+    state: present
+
+- name: Deploy dnsdist configuration
+  template:
+    src: dnsdist.conf.j2
+    dest: /etc/dnsdist/dnsdist.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart dnsdist
+  changed_when: true
+  tags: dnsdist-config
