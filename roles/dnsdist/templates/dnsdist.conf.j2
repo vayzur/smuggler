@@ -7,7 +7,22 @@ setACL({
 })
 
 {% for server in dnsdist_upstream_servers | default([]) %}
-newServer({address="{{ server }}"})
+newServer({
+    address="{{ server.address }}",
+    order={{ server.order | default(1, true) }},
+    weight={{ server.order | default(1, true) }},
+    checkInterval={{ server.check_interval | default(2, true) }},
+    checkTimeout={{ server.check_timeout | default(1000, true) }},
+    checkType="{{ server.check_type | default('TXT', true) }}",
+    maxCheckFailures={{ server.max_check_failures | default(1, true) }},
+    mustResolve={{ server.must_resolve | default(true) | bool | lower }},
+    useClientSubnet={{ server.use_client_subnet | default(false) | bool | lower }},
+    tcpOnly={{ server.tcp_only | default(false) | bool | lower }},
+    checkTCP={{ server.check_tcp | default(false) | bool | lower }},
+    dscp={{ server.dscp | default(0) }},
+    reconnectOnUp={{ server.reconnect_on_up | default(false) | bool | lower }},
+    rise={{ server.rise | default(1, true) }}
+})
 {% endfor %}
 
 {% for tun in smuggler_tunnels %}
@@ -44,7 +59,7 @@ webserver("{{ dnsdist_metrics_bind_addr | default('127.0.0.1', true) }}:{{ dnsdi
 setWebserverConfig({
   password="{{ dnsdist_metrics_password | default('admin', true) }}",
   apiKey="{{ dnsdist_metrics_api_key | default('') }}",
-  statsRequireAuthentication={{ dnsdist_metrics_require_auth | default(false) | lower }},
+  statsRequireAuthentication={{ dnsdist_metrics_require_auth | default(false) | bool | lower }},
   acl="{%- for acl in dnsdist_metrics_acl | default(['127.0.0.0/8', '::1/128']) %}{{ acl }}{% if not loop.last %}, {% endif %}{%- endfor %}"
 })
 {% endif %}

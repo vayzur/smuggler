@@ -10,11 +10,32 @@ dnsdist_acl:
   - "::/0"
 
 # Upstream DNS servers (for non-tunnel queries)
-dnsdist_upstream_servers: []
-# Example:
-# dnsdist_upstream_servers:
-#   - "8.8.8.8:53"
-#   - "1.1.1.1:53"
+dnsdist_upstream_servers:
+  - address: "8.8.8.8:53"
+    check_interval: 2
+    check_timeout: 1000
+    check_type: "A"
+    max_check_failures: 1
+    must_resolve: true
+    use_client_subnet: false
+    tcp_only: false
+    check_tcp: false
+    dscp: 0
+    reconnect_on_up: false
+    rise: 1
+
+  - address: "8.8.4.4:53"
+    check_interval: 2
+    check_timeout: 1000
+    check_type: "A"
+    max_check_failures: 1
+    must_resolve: true
+    use_client_subnet: false
+    tcp_only: false
+    check_tcp: false
+    dscp: 0
+    reconnect_on_up: false
+    rise: 1
 
 # Load balancing policy
 # Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
