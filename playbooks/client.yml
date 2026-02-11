@@ -14,5 +14,5 @@
       tags: always
 
   roles:
-    - { role: lb, tags: lb, when: load_balancing }
+    - { role: lb, tags: lb }
     - { role: client, tags: client }
