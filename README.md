@@ -55,22 +55,22 @@ tunnels:
 
 Smuggler handles the rest with defaults.
 
-## Engines
-
-| Engine | Language | Notes |
-|--------|----------|-------|
-| `slipstream` | Rust | QUIC-based, high performance |
-| `dnstt` | Go | UDP/DoH/DoT, widely deployed |
-
 ## Features
 
--  **Two tunnel engines.** slipstream (QUIC-based, Rust) and dnstt (UDP/DoH/DoT, Go) — pick per tunnel.
+- **Multi-engine support.** slipstream (QUIC-based, Rust) and dnstt (UDP/DoH/DoT, Go) — pick per tunnel.
 - **Client-side load balancing.** Kernel-level traffic distribution across tunnel instances via nftables. DNS resolver distribution via DNSdist. Both are independent, both are optional.
 - **Server-side load balancing.** DNSdist in front of tunnel instances — multi-instance per domain, multi-domain on the same server, zone-based query routing.
 - **Health checking.** Per-tunnel, systemd timer-driven. Automatic failover to a backup tunnel on failure, automatic recovery when the tunnel comes back.
 - **SSH SOCKS proxies.** Server-side, managed by Ansible. No external proxy configuration needed.
 - **Declarative config.** One YAML file defines your entire infrastructure. Sane defaults everywhere — override only what you need.
 - **Systemd-native.** Every tunnel, proxy, and health checker runs as an independent managed service.
+
+## Engines
+
+| Engine | Language | Notes |
+|--------|----------|-------|
+| `slipstream` | Rust | QUIC-based, high performance |
+| `dnstt` | Go | UDP/DoH/DoT, widely deployed |
 
 ## Requirements
 
