@@ -8,26 +8,6 @@ Define your infrastructure in YAML, deploy with one command.
 
 DNS tunneling encapsulates traffic inside DNS queries and responses — useful when only DNS traffic is allowed through a network or VPNs are blocked.
 
-## Features
-
-### Client
-- **Health checking** with automatic failover and configurable backup tunnels
-- **Kernel-level traffic load balancing** across tunnel instances (nftables: hash, roundrobin, random)
-- **DNS resolver load balancing** across multiple upstream resolvers (DNSdist)
-- Per-tunnel systemd services with **self-healing** and fast reconnection
-
-### Server
-- **Multi-instance load balancing** per domain (DNSdist)
-- **Multi-domain support** — run multiple tunnels with different domains on the same server
-- **Zone-based DNS routing** — each domain routes to its own tunnel pool
-- **Built-in SSH SOCKS proxies** — no external proxy configuration needed
-
-### Infrastructure
-- **Declarative YAML DSL** — define your entire infrastructure in one file
-- **Flexible topology** — 1:N, N:1, and N:N deployment patterns
-- **Full Ansible automation** — one command to deploy, update, or reconfigure
-- **Systemd-native** — every component is a managed, restartable service
-
 ## Quick start
 
 ```bash
@@ -81,6 +61,16 @@ Smuggler handles the rest with defaults.
 |--------|----------|-------|
 | `slipstream` | Rust | QUIC-based, high performance |
 | `dnstt` | Go | UDP/DoH/DoT, widely deployed |
+
+## Features
+
+-  **Two tunnel engines.** slipstream (QUIC-based, Rust) and dnstt (UDP/DoH/DoT, Go) — pick per tunnel.
+- **Client-side load balancing.** Kernel-level traffic distribution across tunnel instances via nftables. DNS resolver distribution via DNSdist. Both are independent, both are optional.
+- **Server-side load balancing.** DNSdist in front of tunnel instances — multi-instance per domain, multi-domain on the same server, zone-based query routing.
+- **Health checking.** Per-tunnel, systemd timer-driven. Automatic failover to a backup tunnel on failure, automatic recovery when the tunnel comes back.
+- **SSH SOCKS proxies.** Server-side, managed by Ansible. No external proxy configuration needed.
+- **Declarative config.** One YAML file defines your entire infrastructure. Sane defaults everywhere — override only what you need.
+- **Systemd-native.** Every tunnel, proxy, and health checker runs as an independent managed service.
 
 ## Requirements
 
