@@ -8,6 +8,26 @@ Define your infrastructure in YAML, deploy with one command.
 
 DNS tunneling encapsulates traffic inside DNS queries and responses — useful when only DNS traffic is allowed through a network or VPNs are blocked.
 
+## Features
+
+### Client
+- **Health checking** with automatic failover and configurable backup tunnels
+- **Kernel-level traffic load balancing** across tunnel instances (nftables: hash, roundrobin, random)
+- **DNS resolver load balancing** across multiple upstream resolvers (DNSdist)
+- Per-tunnel systemd services with **self-healing** and fast reconnection
+
+### Server
+- **Multi-instance load balancing** per domain (DNSdist)
+- **Multi-domain support** — run multiple tunnels with different domains on the same server
+- **Zone-based DNS routing** — each domain routes to its own tunnel pool
+- **Built-in SSH SOCKS proxies** — no external proxy configuration needed
+
+### Infrastructure
+- **Declarative YAML DSL** — define your entire infrastructure in one file
+- **Flexible topology** — 1:N, N:1, and N:N deployment patterns
+- **Full Ansible automation** — one command to deploy, update, or reconfigure
+- **Systemd-native** — every component is a managed, restartable service
+
 ## Quick start
 
 ```bash
@@ -61,14 +81,6 @@ Smuggler handles the rest with defaults.
 |--------|----------|-------|
 | `slipstream` | Rust | QUIC-based, high performance |
 | `dnstt` | Go | UDP/DoH/DoT, widely deployed |
-
-## Features
-
-**Client:** health checking, automatic failover, kernel-level traffic load balancing (nftables), DNS resolver load balancing (DNSdist)
-
-**Server:** multi-instance and multi-domain load balancing (DNSdist), built-in SSH SOCKS proxies, zone-based query routing
-
-**Infrastructure:** declarative YAML config, systemd-managed services, 1:N / N:1 / N:N deployment patterns
 
 ## Requirements
 
