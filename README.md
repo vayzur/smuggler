@@ -65,13 +65,6 @@ Smuggler handles the rest with defaults.
 - **Declarative config.** One YAML file defines your entire infrastructure. Sane defaults everywhere — override only what you need.
 - **Systemd-native.** Every tunnel, proxy, and health checker runs as an independent managed service.
 
-## Engines
-
-| Engine | Language | Notes |
-|--------|----------|-------|
-| `slipstream` | Rust | QUIC-based, high performance |
-| `dnstt` | Go | UDP/DoH/DoT, widely deployed |
-
 ## Requirements
 
 **Control machine:** Ansible >= 2.10, SSH client
