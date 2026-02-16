@@ -1,7 +1,7 @@
 ---
 dnsdist: false
 
-dnsdist_bind_addr: "0.0.0.0"
+dnsdist_bind_addr: "{{ ansible_default_ipv4.address }}"
 dnsdist_bind_port: 53
 
 # ACL configuration
