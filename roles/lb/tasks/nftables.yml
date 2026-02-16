@@ -28,5 +28,5 @@
     mode: 0644
     owner: root
     group: root
-    changed_when: true
+  changed_when: true
   notify: Reload lb
