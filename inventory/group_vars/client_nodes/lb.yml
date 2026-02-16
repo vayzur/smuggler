@@ -7,7 +7,7 @@
 #   - "10000-10200"
 
 # DNS load balancer - distributes DNS queries across multiple resolvers
-# dnsdist: true
+# dnsdist: false
 
 # dnsdist_bind_addr: "127.0.0.1"
 # dnsdist_bind_port: 5300
@@ -40,7 +40,7 @@
 # dnsdist_tcp_send_timeout: 2
 
 # Prometheus metrics
-dnsdist_metrics: true
+# dnsdist_metrics: false
 # dnsdist_metrics_bind_addr: "127.0.0.1"
 # dnsdist_metrics_bind_port: 8083
 # dnsdist_metrics_require_auth: false
