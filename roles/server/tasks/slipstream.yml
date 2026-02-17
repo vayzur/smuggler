@@ -24,8 +24,9 @@
 - name: Generate slipstream keys
   shell: |
     openssl req -x509 -newkey rsa:2048 -nodes -keyout {{ keys_path }}/{{ slipstream_privkey }} -out {{ keys_path }}/{{ slipstream_pubkey }} -days 365 -subj "/CN=slipstream"
-  when: not slipstream_keys.stat.exists
-  throttle: 1
+  when: 
+    - not slipstream_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'slipstream') | map(attribute='server_node') | list | first == inventory_hostname
   tags:
     - slipstream-keys
 
@@ -37,8 +38,9 @@
   loop:
     - "{{ keys_path }}/{{ slipstream_privkey }}"
     - "{{ keys_path }}/{{ slipstream_pubkey }}"
-  when: not slipstream_keys.stat.exists
-  throttle: 1
+  when: 
+    - not slipstream_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'slipstream') | map(attribute='server_node') | list | first == inventory_hostname
   tags:
     - slipstream-keys
 

@@ -7,16 +7,6 @@
   tags:
     - dnstt-server-binary
 
-- name: Ensure smuggler directory exists on controller
-  file:
-    path: "{{ controller_keys_path }}"
-    state: directory
-    mode: 0700
-  delegate_to: localhost
-  become: false
-  tags:
-    - dnstt-keys
-
 - name: Check dnstt keys on controller
   stat:
     path: "{{ controller_keys_path }}/{{ dnstt_privkey }}"
@@ -29,8 +19,9 @@
 - name: Generate dnstt keys
   shell: |
     dnstt-server -gen-key -privkey-file {{ keys_path }}/{{ dnstt_privkey }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }}
-  when: not dnstt_keys.stat.exists
-  throttle: 1  # Only one at a time
+  when:
+    - not dnstt_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'dnstt') | map(attribute='server_node') | list | first == inventory_hostname
   tags:
     - dnstt-keys
 
@@ -42,8 +33,9 @@
   loop:
     - "{{ keys_path }}/{{ dnstt_privkey }}"
     - "{{ keys_path }}/{{ dnstt_pubkey }}"
-  when: not dnstt_keys.stat.exists
-  throttle: 1  # Only one at a time
+  when:
+    - not dnstt_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'dnstt') | map(attribute='server_node') | list | first == inventory_hostname
   tags:
     - dnstt-keys
 
