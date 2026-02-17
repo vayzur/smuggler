@@ -1,4 +1,16 @@
 ---
+- name: Ensure smuggler directory exists on controller
+  file:
+    path: "{{ controller_keys_path }}"
+    state: directory
+    mode: 0700
+  delegate_to: localhost
+  become: false
+  run_once: true
+  tags:
+    - dnstt-keys
+    - slipstream-keys
+
 - import_tasks: dnstt.yml
   when: smuggler_engines | intersect(['dnstt']) | length > 0
   tags:
