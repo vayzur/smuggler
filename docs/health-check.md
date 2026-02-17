@@ -79,8 +79,8 @@ When the tunnel at `5200` fails, traffic is redirected to `5202` until it recove
 | `health_check.interval` | `3s` | How often to run the check |
 | `health_check.boot_delay` | `10s` | Wait after boot before first check |
 | `health_check.proxy_type` | *(required)* | Proxy protocol: `http` or `socks5` |
-| `health_check.proxy_addr` | *(required)* | Address of the tunnel's proxy listener |
-| `health_check.proxy_port` | *(required)* | Port of the tunnel's proxy listener |
+| `health_check.proxy_addr` | `127.0.0.1` | Address of the tunnel's proxy listener |
+| `health_check.proxy_port` | `client.bind_port` | Port of the tunnel's proxy listener |
 | `health_check.test_url` | `http://www.google.com/gen_204` | URL to test through the proxy |
 | `health_check.timeout` | `3` | Seconds before the test is considered failed |
 

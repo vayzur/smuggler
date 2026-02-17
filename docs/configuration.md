@@ -109,6 +109,8 @@ Some fields are engine-specific and silently ignored if you set them on the wron
 | `client.health_check.enabled` | `false` |
 | `client.health_check.interval` | `3s` |
 | `client.health_check.boot_delay` | `10s` |
+| `client.health_check.proxy_addr` | `127.0.0.1` |
+| `client.health_check.proxy_port` | `client.bind_port` |
 | `client.health_check.test_url` | `http://www.google.com/gen_204` |
 | `client.health_check.timeout` | `3` |
 
@@ -136,8 +138,8 @@ These live in role defaults and can be overridden in group_vars.
 |-----|---------|
 | `keys_path` | `/opt` |
 | `controller_keys_path` | `~/.smuggler` |
-| `dnstt_client_binary_url` | GitHub releases (latest) |
-| `slipstream_client_binary_url` | GitHub releases (v2026.02.05) |
+| `dnstt_client_binary_url` | GitHub releases |
+| `slipstream_client_binary_url` | GitHub releases |
 | `dnstt_pubkey` | `dnstt.pub` |
 | `dnstt_privkey` | `dnstt.key` |
 | `dnstt_GOGC` | `10` |
@@ -149,8 +151,8 @@ These live in role defaults and can be overridden in group_vars.
 |-----|---------|
 | `keys_path` | `/opt` |
 | `controller_keys_path` | `~/.smuggler` |
-| `dnstt_server_binary_url` | GitHub releases (latest) |
-| `slipstream_server_binary_url` | GitHub releases (v2026.02.05) |
+| `dnstt_server_binary_url` | GitHub releases |
+| `slipstream_server_binary_url` | GitHub releases |
 | `dnstt_pubkey` | `dnstt.pub` |
 | `dnstt_privkey` | `dnstt.key` |
 | `slipstream_pubkey` | `slipstream.pub` |
