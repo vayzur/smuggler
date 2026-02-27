@@ -1,8 +1,7 @@
 [Unit]
 Description=Smuggler SSH proxy for {{ item.0.name }}-{{ item.1.name }}
 Documentation=https://github.com/vayzur
-After=network-online.target
-Wants=network-online.target
+After=network.target nss-lookup.target
 StartLimitIntervalSec=0
 StartLimitBurst=0
 

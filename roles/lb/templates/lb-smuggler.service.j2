@@ -1,6 +1,6 @@
 [Unit]
 Description=Smuggler load balancing service
-After=network.target
+After=network.target nss-lookup.target
 
 [Service]
 Type=oneshot

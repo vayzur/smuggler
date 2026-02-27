@@ -4,8 +4,7 @@
 Description=Smuggler {{ tun.name }} service
 Documentation=https://github.com/vayzur
 
-After=network-online.target
-Requires=network-online.target
+After=network.target nss-lookup.target
 
 StartLimitIntervalSec=0
 StartLimitBurst=0
