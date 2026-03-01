@@ -28,7 +28,6 @@ example:
 
 output:
   healthy.txt - list of working resolvers
-  unhealthy.txt - list of not working resolvers
 EOF
 }
 
@@ -38,7 +37,6 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
 fi
 
 healthy_file="healthy.txt"
-unhealthy_file="unhealthy.txt"
 resolvers_path="${1:?resolver path is required}"
 domain="${2:?domain is required}"
 pubkey="${3:?dnstt public key is required}"
@@ -72,7 +70,6 @@ command -v dnstt-client >/dev/null 2>&1 || {
 echo -e "\ndomain: ${domain}\npubkey: ${pubkey}\nlisten address: ${listen_address}\nproxy: ${proxy}\ntimeout: ${timeout}\n\n"
 
 : > "$healthy_file"
-: > "$unhealthy_file"
 
 while read -r addr; do
   [[ -z "$addr" ]] && continue
@@ -95,11 +92,8 @@ while read -r addr; do
   wait "$dnstt_pid" 2>/dev/null
 
   if [[ "$curl_status" -eq 0 ]]; then
-    echo -e "${GREEN}[+] healthy:${NC} $addr"
+    echo -e "${GREEN}[+]$addr${NC}"
     echo "$addr" >> "$healthy_file"
-  else
-    echo -e "${RED}[-] unhealthy:${NC} $addr"
-    echo "$addr" >> "$unhealthy_file"
   fi
 
 done < "$resolvers_path"
