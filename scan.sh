@@ -92,7 +92,7 @@ while read -r addr; do
   wait "$dnstt_pid" 2>/dev/null
 
   if [[ "$curl_status" -eq 0 ]]; then
-    echo -e "${GREEN}[+]$addr${NC}"
+    echo -e "${GREEN}$addr${NC}"
     echo "$addr" >> "$healthy_file"
   fi
 
