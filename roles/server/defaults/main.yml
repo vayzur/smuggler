@@ -12,4 +12,3 @@ dnstt_GOMEMLIMIT: "512MiB"
 slipstream_server_binary_url: "https://github.com/net2share/slipstream-rust-build/releases/download/v2026.02.22.1/slipstream-server-linux-amd64"
 slipstream_pubkey: "slipstream.pub"
 slipstream_privkey: "slipstream.key"
-
