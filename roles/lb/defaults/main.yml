@@ -53,7 +53,10 @@ dnsdist_upstream_servers:
     rise: 1
 
 # Load balancing policy
-# Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
+# leastOutstanding is ideal for client-side DNS tunnel load balancing
+# spreads new tunnel connections across resolvers based on active query count
+# naturally avoids overloaded or slow resolvers without manual intervention
+# Options: leastOutstanding, roundrobin, firstAvailable, wrandom, chashed, whashed
 dnsdist_server_policy: "leastOutstanding"
 
 # Performance

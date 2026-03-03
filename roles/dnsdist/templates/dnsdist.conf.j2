@@ -47,7 +47,7 @@ addAction(AllRule(), DropAction())
 
 setLocal("{{ dnsdist_bind_addr | default('0.0.0.0', true) }}:{{ dnsdist_bind_port | default(53, true) }}")
 
-setServerPolicy({{ dnsdist_server_policy | default('leastOutstanding', true) }})
+setServerPolicy({{ dnsdist_server_policy | default('chashed', true) }})
 
 setUDPTimeout({{ dnsdist_udp_timeout | default(2, true) }})
 setMaxUDPOutstanding({{ dnsdist_max_udp_outstanding | default(65535, true) }})

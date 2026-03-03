@@ -15,8 +15,10 @@
 #   - address: "8.8.4.4:53"
 
 # Load balancing policy
-# Options: leastOutstanding (least queries in flight), roundrobin (rotate), firstAvailable (first responsive), wrandom (weighted random), chashed (consistent hashing)
-# dnsdist_server_policy: "leastOutstanding"
+# chashed (consistent hashing) is required for stateful DNS tunnels (e.g. dnstt, slipstream)
+# it hashes on QNAME, ensuring queries for the same domain always reach the same backend instance
+# Options: leastOutstanding, roundrobin, firstAvailable, wrandom, chashed, whashed
+# dnsdist_server_policy: "chashed"
 
 # Action for non-matching queries
 # Options: drop, refuse, forward
