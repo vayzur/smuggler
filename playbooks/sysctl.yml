@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Apply System-wide Kernel Parameters
+  hosts: all
   become: true
   roles:
     - { role: sysctl, tags: sysctl }

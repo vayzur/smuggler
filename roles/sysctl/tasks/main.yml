@@ -7,7 +7,7 @@
     group: root
     mode: 0755
 
-- name: Deploy smuggler sysctl settings
+- name: Deploy smuggler sysctl configuration
   template:
     src: sysctl.conf.j2
     dest: /etc/sysctl.d/90-smuggler.conf

@@ -1,5 +1,6 @@
 ---
-- hosts: client_nodes
+- name: Configure Smuggler Client Nodes
+  hosts: client_nodes
   become: true
   pre_tasks:
     - name: Filter tunnels
