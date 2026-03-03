@@ -38,10 +38,10 @@ dnsdist_upstream_servers:
     rise: 1
 
 # Load balancing policy
-# chashed (consistent hashing) is required for stateful DNS tunnels (e.g. dnstt, slipstream)
-# it hashes on QNAME, ensuring queries for the same domain always reach the same backend instance
+# firstAvailable is used for stateful DNS tunnels (e.g. dnstt, slipstream)
+# routes all queries to the first responsive backend, remaining instances act as failover
 # Options: leastOutstanding, roundrobin, firstAvailable, wrandom, chashed, whashed
-dnsdist_server_policy: "chashed"
+dnsdist_server_policy: "firstAvailable"
 
 # Action for non-matching queries
 # Options: drop, refuse, forward
