@@ -5,15 +5,21 @@
   pre_tasks:
     - name: Filter tunnels
       set_fact:
-        smuggler_tunnels: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list }}"
-        smuggler_tunnels_length: "{{ tunnels | selectattr('client_node', 'equalto', inventory_hostname) | list | length }}"
+        smuggler_tunnels: "{{ tunnels | selectattr('client_node', 'defined') | selectattr('client_node', 'equalto', inventory_hostname) | list }}"
+        smuggler_tunnels_length: "{{ (tunnels | selectattr('client_node', 'defined') | selectattr('client_node', 'equalto', inventory_hostname) | list) | length }}"
       tags: always
 
     - name: Filter engines
       set_fact:
-        smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list }}"
+        smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list if smuggler_tunnels | length > 0 else [] }}"
+      tags: always
+
+    - name: Skip client role if no tunnels
+      set_fact:
+        skip_client_setup: "{{ smuggler_tunnels_length | int == 0 }}"
       tags: always
 
   roles:
-    - { role: lb, tags: lb }
-    - { role: client, tags: client }
+    - { role: lb, tags: lb, when: not skip_client_setup }
+    - { role: client, tags: client, when: not skip_client_setup }
+

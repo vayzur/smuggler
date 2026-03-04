@@ -5,16 +5,22 @@
   pre_tasks:
     - name: Filter tunnels
       set_fact:
-        smuggler_tunnels: "{{ tunnels | selectattr('server_node', 'equalto', inventory_hostname) | list }}"
-        smuggler_tunnels_length: "{{ tunnels | selectattr('server_node', 'equalto', inventory_hostname) | list | length }}"
+        smuggler_tunnels: "{{ tunnels | selectattr('server_node', 'defined') | selectattr('server_node', 'equalto', inventory_hostname) | list }}"
+        smuggler_tunnels_length: "{{ (tunnels | selectattr('server_node', 'defined') | selectattr('server_node', 'equalto', inventory_hostname) | list) | length }}"
       tags: always
 
     - name: Filter engines
       set_fact:
-        smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list }}"
+        smuggler_engines: "{{ smuggler_tunnels | map(attribute='engine') | unique | list if smuggler_tunnels | length > 0 else [] }}"
+      tags: always
+
+    - name: Skip server role if no tunnels
+      set_fact:
+        skip_server_setup: "{{ smuggler_tunnels_length | int == 0 }}"
       tags: always
 
   roles:
-    - { role: server, tags: server }
-    - { role: proxy, tags: proxy, when: ssh_proxy }
-    - { role: dnsdist, tags: dnsdist, when: dnsdist }
+    - { role: server, tags: server, when: not skip_server_setup }
+    - { role: proxy, tags: proxy, when: (ssh_proxy | default(false)) and not skip_server_setup }
+    - { role: dnsdist, tags: dnsdist, when: (dnsdist | default(false)) and not skip_server_setup }
+
