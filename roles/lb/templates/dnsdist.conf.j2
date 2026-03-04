@@ -45,6 +45,6 @@ setWebserverConfig({
 {% endif %}
 
 {% if dnsdist_console | default(false) %}
-controlSocket("{{ dnsdist_control_socket || default('127.0.0.1:5199', true) }}")
+controlSocket("{{ dnsdist_control_socket | default('127.0.0.1:5199', true) }}")
 setKey("{{ dnsdist_console_key | default('NTNPTQsE5e1LL5W0zPpqepXrg+HmzNSmgcqlzgqjz2g=', true) }}")
 {% endif %}
