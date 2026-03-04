@@ -34,3 +34,8 @@
 # dnsdist_metrics_acl:
 #   - "0.0.0.0/0"
 #   - "::/0"
+
+# Console
+# dnsdist_console: false
+# dnsdist_control_socket: "127.0.0.1:5199"
+# dnsdist_console_key: "NTNPTQsE5e1LL5W0zPpqepXrg+HmzNSmgcqlzgqjz2g="

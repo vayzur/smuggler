@@ -63,3 +63,8 @@ setWebserverConfig({
   acl="{%- for acl in dnsdist_metrics_acl | default(['127.0.0.0/8', '::1/128']) %}{{ acl }}{% if not loop.last %}, {% endif %}{%- endfor %}"
 })
 {% endif %}
+
+{% if dnsdist_console | default(false) %}
+controlSocket("{{ dnsdist_control_socket || default('127.0.0.1:5199', true) }}")
+setKey("{{ dnsdist_console_key | default('NTNPTQsE5e1LL5W0zPpqepXrg+HmzNSmgcqlzgqjz2g=', true) }}")
+{% endif %}
