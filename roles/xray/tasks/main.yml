@@ -32,7 +32,7 @@
 
 - name: Deploy Xray configuration
   copy:
-    src: "{{ lookup('first_found', [inventory_hostname + '.json', 'default.json'], paths=['files']) }}"
+    src: "{{ lookup('first_found', {'files': [inventory_hostname + '.json', 'default.json'], 'paths': ['files']}) }}"
     dest: "{{ xray_dir }}/config.json"
     mode: 0644
   notify:
