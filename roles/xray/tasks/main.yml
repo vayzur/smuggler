@@ -4,6 +4,14 @@
     name: unzip
     state: present
 
+- name: Ensure Xray directory exists
+  file:
+    path: "{{ xray_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
 - name: Download Xray binary package
   get_url:
     url: "https://github.com/XTLS/Xray-core/releases/download/v{{ xray_version }}/Xray-linux-64.zip"
