@@ -9,14 +9,4 @@ StartLimitBurst=0
 [Service]
 Type=oneshot
 LogLevelMax=warning
-ExecStart=/opt/health-smuggler.sh \
-  {{ tun.name }} \
-  {{ tun.client.health_check.proxy_type }}://{% if tun.client.health_check.proxy_user | default('') and tun.client.health_check.proxy_pass | default('') %}{{ tun.client.health_check.proxy_user }}:{{ tun.client.health_check.proxy_pass }}@{% endif %}{{ tun.client.health_check.proxy_addr | default('127.0.0.1', true) }}:{{ tun.client.health_check.proxy_port | default(tun.client.bind_port, true) }} \
-  {{ tun.client.health_check.test_url | default('http://www.google.com/gen_204', true) }} \
-  {{ tun.client.health_check.timeout | default(3, true) }} \
-  {{ tun.client.lb.enabled | default(false) | lower }} \
-  {{ tun_idx }} \
-  {{ '127.0.0.1' if tun.client.bind_addr == '0.0.0.0' else tun.client.bind_addr | default('127.0.0.1', true) }} \
-  {{ tun.client.bind_port }} \
-  {{ tun.client.lb.backup_addr | default('127.0.0.1', true) }} \
-  {{ tun.client.lb.backup_port | default(tun.client.bind_port, true) }}
+ExecStart=/opt/health-smuggler.sh {{ tun.name }} {{ tun.client.health_check.proxy_type }}://{% if tun.client.health_check.proxy_user | default('') and tun.client.health_check.proxy_pass | default('') %}{{ tun.client.health_check.proxy_user | default('') | urlencode | regex_replace('%', '%%') }}:{{ tun.client.health_check.proxy_pass | default('') | urlencode | regex_replace('%', '%%') }}@{% endif %}{{ tun.client.health_check.proxy_addr | default('127.0.0.1', true) }}:{{ tun.client.health_check.proxy_port | default(tun.client.bind_port, true) }} {{ tun.client.health_check.test_url | default('http://www.google.com/gen_204', true) }} {{ tun.client.health_check.timeout | default(3, true) }} {{ tun.client.lb.enabled | default(false) | lower }} {{ tun_idx }} {{ '127.0.0.1' if tun.client.bind_addr == '0.0.0.0' else tun.client.bind_addr | default('127.0.0.1', true) }} {{ tun.client.bind_port }} {{ tun.client.lb.backup_addr | default('127.0.0.1', true) }} {{ tun.client.lb.backup_port | default(tun.client.bind_port, true) }}
