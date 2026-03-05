@@ -1,0 +1,9 @@
+---
+xray: false
+
+xray_version: 26.2.6
+
+xray_dir: "/opt/xray"
+
+xray_GOMEMLIMIT: "512MiB"
+xray_GOGC: "10"

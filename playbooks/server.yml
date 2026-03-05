@@ -20,7 +20,7 @@
       tags: always
 
   roles:
+    - { role: xray, tags: xray, when: (xray | default(false)) and not skip_server_setup }
     - { role: server, tags: server, when: not skip_server_setup }
     - { role: proxy, tags: proxy, when: (ssh_proxy | default(false)) and not skip_server_setup }
     - { role: dnsdist, tags: dnsdist, when: (dnsdist | default(false)) and not skip_server_setup }
-
