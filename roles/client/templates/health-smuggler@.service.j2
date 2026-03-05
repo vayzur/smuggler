@@ -19,4 +19,4 @@ ExecStart=/opt/health-smuggler.sh \
   {{ '127.0.0.1' if tun.client.bind_addr == '0.0.0.0' else tun.client.bind_addr | default('127.0.0.1', true) }} \
   {{ tun.client.bind_port }} \
   {{ tun.client.lb.backup_addr | default('127.0.0.1', true) }} \
-  {{ tun.client.lb.backup_port }}
+  {{ tun.client.lb.backup_port | default(tun.client.bind_port, true) }}
