@@ -1,5 +1,5 @@
 ---
-# dnsdist: false
+dnsdist: true
 
 # dnsdist_bind_addr: "{{ ansible_default_ipv4.address }}"
 # dnsdist_bind_port: 53
