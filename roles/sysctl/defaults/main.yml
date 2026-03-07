@@ -1,5 +1,6 @@
 ---
 sysctl_config:
+  net.core.somaxconn: 65536
   net.core.netdev_max_backlog: 10000
   net.core.netdev_budget: 600
   net.core.dev_weight: 600
@@ -23,6 +24,8 @@ sysctl_config:
   net.ipv4.tcp_autocorking: 0
   net.ipv4.tcp_timestamps: 0
   net.ipv4.tcp_no_metrics_save: 1
+  net.ipv4.tcp_max_syn_backlog: 4096
+  net.ipv4.tcp_syncookies: 1
   net.ipv4.udp_rmem_min: 2097152
   net.ipv4.udp_wmem_min: 2097152
   net.ipv4.ip_forward: 1
