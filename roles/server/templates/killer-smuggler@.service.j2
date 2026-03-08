@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Smuggler Killer {{ tun.name }}
+Documentation=https://github.com/vayzur
+StartLimitIntervalSec=0
+StartLimitBurst=0
+
+[Service]
+Type=oneshot
+LogLevelMax=warning
+ExecStart=systemctl restart smuggler@{{ tun.name }}.service

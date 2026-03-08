@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Smuggler Killer {{ tun.name }} every {{ tun.server.killer.interval | default('30min', true) }}
+
+[Timer]
+OnBootSec={{ tun.server.killer.boot_delay | default('1min', true) }}
+OnUnitActiveSec={{ tun.server.killer.interval | default('30min', true) }}
+AccuracySec=1s
+Persistent=false
+Unit=killer-smuggler@{{ tun.name }}.service
+
+[Install]
+WantedBy=timers.target
