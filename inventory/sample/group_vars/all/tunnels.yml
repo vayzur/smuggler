@@ -1,0 +1,41 @@
+---
+tunnels:
+  - name: t00
+    server_node: node0
+    engine: slipstream
+    domain: t0.example.com
+    server:
+      bind_addr: 127.0.0.1
+      bind_port: 8200
+      target_port: 1080
+      max_connections: 1024
+
+  - name: t01
+    server_node: node0
+    engine: slipstream
+    domain: t1.example.com
+    server:
+      bind_addr: 127.0.0.1
+      bind_port: 8201
+      target_port: 1080
+      max_connections: 1024
+
+  - name: t10
+    server_node: node0
+    engine: dnstt
+    domain: t2.example.com
+    server:
+      bind_addr: 127.0.0.1
+      bind_port: 8202
+      target_port: 1080
+      mtu: 493
+
+  - name: t11
+    server_node: node0
+    engine: dnstt
+    domain: t3.example.com
+    server:
+      bind_addr: 127.0.0.1
+      bind_port: 8203
+      target_port: 1080
+      mtu: 493

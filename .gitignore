@@ -1,6 +1,2 @@
 inventory/*
-!inventory/sample.yml
-!inventory/group_vars/all/examples.yml
-!inventory/group_vars/client_nodes/lb.yml
-!inventory/group_vars/server_nodes/lb.yml
-!inventory/group_vars/server_nodes/proxy.yml
+!inventory/sample

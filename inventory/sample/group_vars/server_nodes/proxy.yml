@@ -1,2 +1,4 @@
 ---
+xray: true
+
 # ssh_proxy: false

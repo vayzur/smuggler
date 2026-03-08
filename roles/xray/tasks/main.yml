@@ -1,0 +1,54 @@
+---
+- name: Install unzip
+  package:
+    name: unzip
+    state: present
+
+- name: Ensure Xray directory exists
+  file:
+    path: "{{ xray_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Download Xray binary package
+  get_url:
+    url: "https://github.com/XTLS/Xray-core/releases/download/v{{ xray_version }}/Xray-linux-64.zip"
+    dest: "/tmp/Xray-linux-64.zip"
+    mode: 0644
+
+- name: Extract Xray binary
+  unarchive:
+    src: "/tmp/Xray-linux-64.zip"
+    dest: "{{ xray_dir }}"
+    remote_src: true
+  changed_when: true
+
+- name: Clean up Xray archive
+  file:
+    path: "/tmp/Xray-linux-64.zip"
+    state: absent
+
+- name: Deploy Xray configuration
+  copy:
+    src: "{{ lookup('first_found', {'files': [inventory_hostname + '.json', 'default.json'], 'paths': ['files']}) }}"
+    dest: "{{ xray_dir }}/config.json"
+    mode: 0644
+  notify:
+    - Enable xray
+  tags:
+    - xray-config
+
+- name: Deploy Xray systemd service
+  template:
+    src: xray.service.j2
+    dest: /etc/systemd/system/xray.service
+    owner: root
+    group: root
+    mode: 0644
+  changed_when: true
+  notify:
+    - Enable xray
+  tags:
+    - xray-service

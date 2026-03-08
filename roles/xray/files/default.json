@@ -1,0 +1,62 @@
+{
+    "log": {
+        "access": "none",
+        "dnsLog": false,
+        "error": "",
+        "loglevel": "warning",
+        "maskAddress": ""
+    },
+    "routing": {
+        "domainStrategy": "AsIs",
+        "rules": [
+            {
+                "type": "field",
+                "outboundTag": "blocked",
+                "protocol": [
+                    "bittorrent"
+                ]
+            }
+        ]
+    },
+    "inbounds": [
+        {
+            "listen": "127.0.0.1",
+            "port": 1080,
+            "protocol": "socks",
+            "settings": {
+                "auth": "password",
+                "accounts": [
+                    {
+                        "user": "hello",
+                        "pass": "world"
+                    }
+                ],
+                "udp": true,
+                "ip": "127.0.0.1"
+            },
+            "streamSettings": {
+                "network": "raw",
+                "security": "none",
+                "sockopt": {
+                    "tcpFastOpen": true,
+                    "tcpCongestion": "bbr",
+                    "tcpMptcp": true,
+                    "tcpNoDelay": true
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "tag": "direct",
+            "protocol": "freedom",
+            "settings": {
+                "domainStrategy": "AsIs"
+            }
+        },
+        {
+            "tag": "blocked",
+            "protocol": "blackhole"
+        }
+    ]
+}
