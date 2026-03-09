@@ -1,13 +1,13 @@
 ---
 # Traffic load balancer - distributes client traffic across multiple tunnels
-# lb: false
-# lb_policy: "hash" # Options: hash, roundrobin, random
-# lb_ports:
-#   - "8080"
-#   - "10000-10200"
+load_balancing: true
+load_balancing_policy: "roundrobin" # Options: hash, roundrobin, random
+load_balancing_ports:
+  - "8080"
+  - "10000-10200"
 
 # DNS load balancer - distributes DNS queries across multiple resolvers
-# dnsdist: false
+dnsdist: true
 
 # dnsdist_bind_addr: "127.0.0.1"
 # dnsdist_bind_port: 5300
@@ -25,9 +25,9 @@
   # - "fe80::/10"
 
 # Upstream DNS servers
-# dnsdist_upstream_servers:
-#   - address: "8.8.8.8:53"
-#   - address: "8.8.4.4:53"
+dnsdist_upstream_servers:
+  - address: "8.8.8.8:53"
+  - address: "8.8.4.4:53"
 
 # Load balancing policy
 # leastOutstanding is ideal for client-side DNS tunnel load balancing

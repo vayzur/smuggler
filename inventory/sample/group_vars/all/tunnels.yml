@@ -2,8 +2,28 @@
 tunnels:
   - name: t00
     server_node: node0
+    client_node: lb0
     engine: slipstream
     domain: t0.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 2051
+      health_check:
+        enabled: true
+        interval: "5s"
+        timeout: 3
+        proxy_type: socks5
+        proxy_user: hello
+        proxy_pass: world
+        proxy_addr: 127.0.0.1
+        proxy_port: 2050
+        test_url: "http://www.google.com/gen_204"
+      dns_resolver: "127.0.0.1:5300"
+      bind_addr: 127.0.0.1
+      bind_port: 2050
+      keep_alive_interval: 200
     server:
       killer:
         enabled: true
@@ -11,22 +31,64 @@ tunnels:
       bind_addr: 127.0.0.1
       bind_port: 8200
       target_port: 1080
-      max_connections: 1024
+      max_connections: 8192
+      idle_timeout_seconds: 60
 
   - name: t01
     server_node: node0
+    client_node: lb0
     engine: slipstream
     domain: t1.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 2050
+      health_check:
+        enabled: true
+        interval: "5s"
+        timeout: 3
+        proxy_type: socks5
+        proxy_user: hello
+        proxy_pass: world
+        proxy_addr: 127.0.0.1
+        proxy_port: 2051
+        test_url: "http://www.google.com/gen_204"
+      dns_resolver: "127.0.0.1:5300"
+      bind_addr: 127.0.0.1
+      bind_port: 2051
+      keep_alive_interval: 200
     server:
       bind_addr: 127.0.0.1
       bind_port: 8201
       target_port: 1080
-      max_connections: 1024
+      max_connections: 8192
+      idle_timeout_seconds: 60
 
   - name: t10
     server_node: node0
+    client_node: lb0
     engine: dnstt
     domain: t2.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 2053
+      health_check:
+        enabled: true
+        interval: "5s"
+        timeout: 3
+        proxy_type: socks5
+        proxy_user: hello
+        proxy_pass: world
+        proxy_addr: 127.0.0.1
+        proxy_port: 2052
+        test_url: "http://www.google.com/gen_204"
+      dns_protocol: udp
+      dns_resolver: "127.0.0.1:5300"
+      bind_addr: 127.0.0.1
+      bind_port: 2052
     server:
       killer:
         enabled: true
@@ -34,14 +96,34 @@ tunnels:
       bind_addr: 127.0.0.1
       bind_port: 8202
       target_port: 1080
-      mtu: 493
+      mtu: 1232
 
   - name: t11
     server_node: node0
+    client_node: lb0
     engine: dnstt
     domain: t3.example.com
+    client:
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 2052
+      health_check:
+        enabled: true
+        interval: "5s"
+        timeout: 3
+        proxy_type: socks5
+        proxy_user: hello
+        proxy_pass: world
+        proxy_addr: 127.0.0.1
+        proxy_port: 2053
+        test_url: "http://www.google.com/gen_204"
+      dns_protocol: udp
+      dns_resolver: "127.0.0.1:5300"
+      bind_addr: 127.0.0.1
+      bind_port: 2053
     server:
       bind_addr: 127.0.0.1
       bind_port: 8203
       target_port: 1080
-      mtu: 493
+      mtu: 1232
