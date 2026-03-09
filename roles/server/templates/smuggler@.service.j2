@@ -51,7 +51,7 @@ RestartSec=1s
 {% endif %}
 
 {% if tun.engine == "slipstream" %}
-ExecStart=/usr/local/bin/slipstream-server --dns-listen-host {{ tun.server.bind_addr | default(ansible_default_ipv4.address, true) }} --dns-listen-port {{ tun.server.bind_port | default(53, true) }} --target-address {{ tun.server.target_addr | default('127.0.0.1', true) }}:{{ tun.server.target_port | default(5201, true) }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }} --max-connections {{ tun.server.max_connections | default(512, true) }} --idle-timeout-seconds {{ tun.server.idle_timeout_seconds | default(3, true) }} {{ tun.server.extra_cmdline | default('') }} 
+ExecStart=/usr/local/bin/slipstream-server --dns-listen-host {{ tun.server.bind_addr | default(ansible_default_ipv4.address, true) }} --dns-listen-port {{ tun.server.bind_port | default(53, true) }} --target-address {{ tun.server.target_addr | default('127.0.0.1', true) }}:{{ tun.server.target_port | default(5201, true) }} --domain {{ tun.domain }} --cert {{ keys_path }}/{{ slipstream_pubkey }} --key {{ keys_path }}/{{ slipstream_privkey }} --max-connections {{ tun.server.max_connections | default(512, true) }} --idle-timeout-seconds {{ tun.server.idle_timeout_seconds | default(60, true) }} {{ tun.server.extra_cmdline | default('') }} 
 {% else %}
 ExecStart=/usr/local/bin/dnstt-server -udp {{ tun.server.bind_addr | default(ansible_default_ipv4.address, true) }}:{{ tun.server.bind_port | default(53, true) }} -mtu {{ tun.server.mtu | default(1232, true) }} -privkey-file {{ keys_path }}/{{ dnstt_privkey }} {{ tun.domain }} {{ tun.server.target_addr | default('127.0.0.1', true) }}:{{ tun.server.target_port | default('7000', true) }}
 {% endif %}
