@@ -19,7 +19,7 @@
     mode: 0644
   changed_when: true
   tags: lb-config
-  notify: Reload lb
+  notify: Restart lb
 
 - name: Deploy smuggler load balancer service
   template:
@@ -29,4 +29,4 @@
     owner: root
     group: root
   changed_when: true
-  notify: Reload lb
+  notify: Restart lb

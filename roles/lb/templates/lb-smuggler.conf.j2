@@ -6,7 +6,7 @@ table ip smuggler_lb {
         type inet_service
         flags interval
         auto-merge
-        elements = { {{ lb_ports | join(', ') }} }
+        elements = { {{ load_balancing_ports | join(', ') }} }
     }
 
     map lb_backends {
@@ -18,9 +18,9 @@ table ip smuggler_lb {
     chain prerouting {
         type nat hook prerouting priority dstnat; policy accept;
 
-{% if lb_policy == 'hash' %}
+{% if load_balancing_policy == 'hash' %}
         tcp dport @lb_ports meta mark set jhash ip saddr . tcp sport mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends
-{% elif lb_policy == 'random' %}
+{% elif load_balancing_policy == 'random' %}
         tcp dport @lb_ports meta mark set numgen random mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends
 {% else %}
         tcp dport @lb_ports meta mark set numgen inc mod {{ smuggler_tunnels_length }} dnat to meta mark map @lb_backends

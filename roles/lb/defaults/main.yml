@@ -1,8 +1,8 @@
 ---
 # Traffic load balancer - distributes client traffic across multiple tunnels
-lb: false
-lb_policy: "hash" # Options: hash, roundrobin, random
-lb_ports:
+load_balancing: false
+load_balancing_policy: "hash" # Options: hash, roundrobin, random
+load_balancing_ports:
   - "8080"
   - "10000-10200"
 

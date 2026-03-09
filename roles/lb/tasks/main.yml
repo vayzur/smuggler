@@ -3,4 +3,4 @@
   when: dnsdist
 
 - import_tasks: nftables.yml
-  when: lb
+  when: load_balancing

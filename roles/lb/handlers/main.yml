@@ -1,5 +1,5 @@
 ---
-- name: Reload lb
+- name: Restart lb
   systemd:
     name: lb-smuggler.service
     enabled: true
