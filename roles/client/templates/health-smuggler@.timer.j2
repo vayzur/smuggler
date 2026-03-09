@@ -1,11 +1,11 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Smuggler Health Check Timer for {{ tun.name }} every {{ tun.client.health_check.interval | default('3s', true) }}
+Description=Smuggler Health Check Timer for {{ tun.name }} every {{ tun.client.health_check.interval | default('10s', true) }}
 
 [Timer]
 OnBootSec={{ tun.client.health_check.boot_delay | default('10s', true) }}
-OnUnitActiveSec={{ tun.client.health_check.interval | default('3s', true) }}
+OnUnitActiveSec={{ tun.client.health_check.interval | default('10s', true) }}
 AccuracySec=1s
 Persistent=false
 Unit=health-smuggler@{{ tun.name }}.service
