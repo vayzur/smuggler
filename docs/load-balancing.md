@@ -23,9 +23,9 @@ nftables intercepts traffic on configured ports and forwards each connection to 
 In `inventory/group_vars/client_nodes/lb.yml`:
 
 ```yaml
-lb: true
-lb_policy: "hash"        # hash | roundrobin | random
-lb_ports:
+load_balancing: true
+load_balancing_policy: "hash"        # hash | roundrobin | random
+load_balancing_ports:
   - "8080"
   - "10000-10200"
 ```
@@ -80,9 +80,9 @@ tunnels:
 
 | Key | Default |
 |-----|---------|
-| `lb` | `false` |
-| `lb_policy` | `hash` |
-| `lb_ports` | `["8080", "10000-10200"]` |
+| `load_balancing` | `false` |
+| `load_balancing_policy` | `hash` |
+| `load_balancing_ports` | `["8080", "10000-10200"]` |
 | `client.lb.enabled` | `false` |
 | `client.lb.backup_addr` | `127.0.0.1` |
 | `client.lb.backup_port` | *(required when lb enabled)* |
