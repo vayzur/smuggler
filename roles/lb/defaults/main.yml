@@ -29,7 +29,8 @@ dnsdist_upstream_servers:
   - address: "8.8.8.8:53"
     check_interval: 2
     check_timeout: 1000
-    check_type: "TXT"
+    check_type: "A"
+    check_name: "cloudflare.com"
     max_check_failures: 1
     must_resolve: true
     use_client_subnet: false
@@ -42,7 +43,8 @@ dnsdist_upstream_servers:
   - address: "8.8.4.4:53"
     check_interval: 2
     check_timeout: 1000
-    check_type: "TXT"
+    check_type: "A"
+    check_name: "cloudflare.com"
     max_check_failures: 1
     must_resolve: true
     use_client_subnet: false
