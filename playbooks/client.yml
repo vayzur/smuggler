@@ -22,4 +22,3 @@
   roles:
     - { role: lb, tags: lb, when: not skip_client_setup }
     - { role: client, tags: client, when: not skip_client_setup }
-
