@@ -13,11 +13,12 @@ LimitNPROC=10000
 LimitNOFILE=1000000
 RestartSec=1
 Restart=always
-
-{% if xray_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ xray_GOMEMLIMIT }}"{% endif %}
-
-{% if xray_GOGC is defined %}Environment="GOGC={{ xray_GOGC }}"{% endif %}
-
+{% if xray_GOMEMLIMIT is defined %}
+Environment="GOMEMLIMIT={{ xray_GOMEMLIMIT }}"
+{% endif %}
+{% if xray_GOGC is defined %}
+Environment="GOGC={{ xray_GOGC }}"
+{% endif %}
 ExecStart={{ xray_dir }}/xray run -config {{ xray_dir }}/config.json
 
 [Install]

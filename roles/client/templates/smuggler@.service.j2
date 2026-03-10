@@ -3,9 +3,7 @@
 [Unit]
 Description=Smuggler {{ tun.name }} service
 Documentation=https://github.com/vayzur
-
 After=network.target nss-lookup.target
-
 StartLimitIntervalSec=0
 StartLimitBurst=0
 
@@ -44,16 +42,17 @@ TimeoutStartSec=3s
 TimeoutStopSec=3s
 Restart=always
 RestartSec=1s
-
 {% if tun.engine != "slipstream" %}
-{% if dnstt_GOGC is defined %}Environment="GOGC={{ dnstt_GOGC }}"{% endif %} 
-{% if dnstt_GOMEMLIMIT is defined %}Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"{% endif %} 
+{% if dnstt_GOGC is defined %}
+Environment="GOGC={{ dnstt_GOGC }}"
 {% endif %}
-
+{% if dnstt_GOMEMLIMIT is defined %}
+Environment="GOMEMLIMIT={{ dnstt_GOMEMLIMIT }}"
+{% endif %}
+{% endif %}
 {% set dns_resolver = tun.client.dns_resolver | default('8.8.8.8:53', true) %}
-
 {% if tun.engine == "slipstream" %}
-ExecStart=/usr/local/bin/slipstream-client --tcp-listen-host {{ tun.client.bind_addr | default('0.0.0.0', true) }} --tcp-listen-port {{ tun.client.bind_port | default(5201, true) }} {{ (dns_resolver is iterable and dns_resolver is not string) | ternary(dns_resolver | map('regex_replace','^(.*)$','--resolver \\1') | join(' '), '--resolver ' ~ dns_resolver) }} --domain {{ tun.domain }} --keep-alive-interval {{ tun.client.keep_alive_interval | default(200, true) }} {{ tun.client.extra_cmdline | default('') }} 
+ExecStart=/usr/local/bin/slipstream-client --tcp-listen-host {{ tun.client.bind_addr | default('0.0.0.0', true) }} --tcp-listen-port {{ tun.client.bind_port | default(5201, true) }} {{ (dns_resolver is iterable and dns_resolver is not string) | ternary(dns_resolver | map('regex_replace','^(.*)$','--resolver \\1') | join(' '), '--resolver ' ~ dns_resolver) }} --domain {{ tun.domain }} --keep-alive-interval {{ tun.client.keep_alive_interval | default(200, true) }} {{ tun.client.extra_cmdline | default('') }}
 {% else %}
 ExecStart=/usr/local/bin/dnstt-client -{{ tun.client.dns_protocol | default('udp', true) }} {{ dns_resolver }} -pubkey-file {{ keys_path }}/{{ dnstt_pubkey }} {{ tun.domain }} {{ tun.client.bind_addr | default('0.0.0.0', true) }}:{{ tun.client.bind_port | default(7000, true) }}
 {% endif %}
