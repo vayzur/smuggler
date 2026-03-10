@@ -1,36 +1,31 @@
 #!/bin/bash
 
-TUNNEL_NAME="${1:?Tunnel name not specified}"
-PROXY="${2:?Proxy not specified}"
-URL="${3:?Health check URL not specified}"
-TIMEOUT="${4:?Timeout not specified}"
-LB_ENABLED="${5:-false}"
+TUNNEL="${1:?tunnel name required}"
+PROXY="${2:?proxy required}"
+URL="${3:?health check URL required}"
+TIMEOUT="${4:?timeout required}"
+LB="${5:-false}"
 
-if [ "$LB_ENABLED" = "true" ]; then
-    LB_TABLE_NAME="smuggler_lb"
-    LB_MAP_NAME="lb_backends"
-    LB_MARK="${6:?LB mark not specified}"
-    LB_IP="${7:?LB IP not specified}"
-    LB_PORT="${8:?LB port not specified}"
-    LB_BACKUP_IP="${9:?LB backup IP not specified}"
-    LB_BACKUP_PORT="${10:?LB backup port not specified}"
-fi
+[[ "$LB" == "true" ]] && {
+    LB_TABLE="smuggler_lb"
+    LB_MAP="lb_backends"
+    LB_MARK="${6:?lb mark required}"
+    LB_IP="${7:?lb ip required}"
+    LB_PORT="${8:?lb port required}"
+    LB_BACKUP_IP="${9:?lb backup ip required}"
+    LB_BACKUP_PORT="${10:?lb backup port required}"
+}
 
-curl -x "$PROXY" --max-time "$TIMEOUT" -s -o /dev/null "$URL"
-curl_status=$?
+set_backend() {
+    local ip=$1 port=$2
+    nft delete element ip "$LB_TABLE" "$LB_MAP" { "$LB_MARK" } 2>/dev/null || true
+    nft add element ip "$LB_TABLE" "$LB_MAP" { "$LB_MARK" : "$ip" . "$port" } 2>/dev/null || true
+}
 
-if [ "$curl_status" -ne 0 ]; then
-    if [ "$LB_ENABLED" = "true" ]; then
-        nft delete element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" } 2>/dev/null || true
-        nft add element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" : "$LB_BACKUP_IP" . "$LB_BACKUP_PORT" } 2>/dev/null || true
-    fi
-    systemctl restart smuggler@"$TUNNEL_NAME".service
+if curl -x "$PROXY" --max-time "$TIMEOUT" -so /dev/null "$URL"; then
+    [[ "$LB" == "true" ]] && set_backend "$LB_IP" "$LB_PORT"
+else
+    [[ "$LB" == "true" ]] && set_backend "$LB_BACKUP_IP" "$LB_BACKUP_PORT"
+    systemctl restart "smuggler@${TUNNEL}.service"
     exit 1
 fi
-
-if [ "$LB_ENABLED" = "true" ]; then
-    nft delete element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" } 2>/dev/null || true
-    nft add element ip "$LB_TABLE_NAME" "$LB_MAP_NAME" { "$LB_MARK" : "$LB_IP" . "$LB_PORT" } 2>/dev/null || true
-fi
-
-exit 0
