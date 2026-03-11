@@ -16,13 +16,13 @@ newServer({
     checkType="{{ server.check_type | default('A', true) }}",
     checkName="{{ server.check_name | default('a.root-servers.net', true) }}",
     maxCheckFailures={{ server.max_check_failures | default(1, true) }},
-    mustResolve={{ server.must_resolve | default(false) | bool | lower }},
+    mustResolve={{ server.must_resolve | default(true) | bool | lower }},
     useClientSubnet={{ server.use_client_subnet | default(false) | bool | lower }},
     tcpOnly={{ server.tcp_only | default(false) | bool | lower }},
     checkTCP={{ server.check_tcp | default(false) | bool | lower }},
     dscp={{ server.dscp | default(0) }},
     reconnectOnUp={{ server.reconnect_on_up | default(false) | bool | lower }},
-    rise={{ server.rise | default(1, true) }}
+    rise={{ server.rise | default(2, true) }}
 })
 {% endfor %}
 
