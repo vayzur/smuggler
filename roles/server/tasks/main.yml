@@ -33,7 +33,7 @@
     loop_var: tun
   when: tun.server.killer.enabled | default(false) | bool
   tags:
-    - server-killer
+    - server-killers
 
 - name: Deploy killer timers
   template:
@@ -47,7 +47,7 @@
     loop_var: tun
   when: tun.server.killer.enabled | default(false) | bool
   tags:
-    - server-killer
+    - server-killers
 
 - name: Deploy tunnel systemd services
   template:
@@ -67,6 +67,7 @@
     daemon_reload: true
   changed_when: true
   tags:
+    - server-killers
     - server-tunnels
 
 - name: Enable and start tunnel services
@@ -90,4 +91,4 @@
     loop_var: tun
   when: tun.server.killer.enabled | default(false) | bool
   tags:
-    - server-killer
+    - server-killers
