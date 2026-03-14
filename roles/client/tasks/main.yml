@@ -67,6 +67,7 @@
     loop_var: tun
   tags:
     - client-tunnels
+    - client-services
 
 - name: Reload systemd daemon
   systemd:
@@ -75,6 +76,7 @@
   tags:
     - client-tunnels
     - client-health-check
+    - client-services
 
 - name: Enable and start tunnel services
   systemd:

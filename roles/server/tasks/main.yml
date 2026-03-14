@@ -61,14 +61,16 @@
     loop_var: tun
   tags:
     - server-tunnels
+    - server-services
 
 - name: Reload systemd daemon
   systemd:
     daemon_reload: true
   changed_when: true
   tags:
-    - server-killers
     - server-tunnels
+    - server-killers
+    - server-services
 
 - name: Enable and start tunnel services
   systemd:
