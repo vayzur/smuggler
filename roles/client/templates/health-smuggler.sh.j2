@@ -4,28 +4,38 @@ TUNNEL="${1:?tunnel name required}"
 PROXY="${2:?proxy required}"
 URL="${3:?health check URL required}"
 TIMEOUT="${4:?timeout required}"
-LB="${5:-false}"
+PROBE_RETRIES="${5:-2}"
+LB="${6:-false}"
+LB_MARK="${7:-0}"
+LB_IP="${8:-127.0.0.1}"
+LB_PORT="${9:-53}"
+LB_BACKUP_IP="${10:-127.0.0.1}"
+LB_BACKUP_PORT="${11:-53}"
 
-[[ "$LB" == "true" ]] && {
-    LB_TABLE="smuggler_lb"
-    LB_MAP="lb_backends"
-    LB_MARK="${6:?lb mark required}"
-    LB_IP="${7:?lb ip required}"
-    LB_PORT="${8:?lb port required}"
-    LB_BACKUP_IP="${9:?lb backup ip required}"
-    LB_BACKUP_PORT="${10:?lb backup port required}"
-}
+LB_TABLE="smuggler_lb"
+LB_MAP="lb_backends"
+TUNNEL_SERVICE="smuggler@${TUNNEL}.service"
 
 set_backend() {
-    local ip=$1 port=$2
     nft delete element ip "$LB_TABLE" "$LB_MAP" { "$LB_MARK" } 2>/dev/null || true
-    nft add element ip "$LB_TABLE" "$LB_MAP" { "$LB_MARK" : "$ip" . "$port" } 2>/dev/null || true
+    nft add element ip "$LB_TABLE" "$LB_MAP" { "$LB_MARK" : "$1" . "$2" } 2>/dev/null || true
 }
 
-if curl -x "$PROXY" --max-time "$TIMEOUT" -so /dev/null "$URL"; then
+probe() {
+    local attempt
+    for attempt in $(seq 1 "$PROBE_RETRIES"); do
+        curl -x "$PROXY" --max-time "$TIMEOUT" -so /dev/null "$URL" 2>/dev/null && return 0
+        [[ $attempt -lt $PROBE_RETRIES ]] && sleep 1
+    done
+    return 1
+}
+
+if probe; then
+    # Probe succeeded - set to primary
     [[ "$LB" == "true" ]] && set_backend "$LB_IP" "$LB_PORT"
 else
+    # Probe failed - set to backup and restart
     [[ "$LB" == "true" ]] && set_backend "$LB_BACKUP_IP" "$LB_BACKUP_PORT"
-    systemctl restart "smuggler@${TUNNEL}.service"
+    systemctl restart --no-block "$TUNNEL_SERVICE"
     exit 1
 fi

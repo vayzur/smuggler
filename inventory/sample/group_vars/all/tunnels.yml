@@ -14,6 +14,7 @@ tunnels:
         enabled: true
         interval: "5s"
         timeout: 3
+        retries: 2
         proxy_type: socks5
         proxy_user: hello
         proxy_pass: world
@@ -48,6 +49,7 @@ tunnels:
         enabled: true
         interval: "5s"
         timeout: 3
+        retries: 2
         proxy_type: socks5
         proxy_user: hello
         proxy_pass: world
@@ -79,6 +81,7 @@ tunnels:
         enabled: true
         interval: "5s"
         timeout: 3
+        retries: 2
         proxy_type: socks5
         proxy_user: hello
         proxy_pass: world
@@ -112,6 +115,7 @@ tunnels:
         enabled: true
         interval: "5s"
         timeout: 3
+        retries: 2
         proxy_type: socks5
         proxy_user: hello
         proxy_pass: world
