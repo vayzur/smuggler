@@ -21,10 +21,10 @@
     "inbounds": [
         {
             "listen": "127.0.0.1",
-            "port": 1080,
+            "port": 1081,
             "protocol": "socks",
             "settings": {
-                "auth": "password",
+                "auth": "noauth",
                 "accounts": [
                     {
                         "user": "hello",
