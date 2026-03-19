@@ -57,7 +57,7 @@ Smuggler handles the rest with defaults.
 
 ## Features
 
-- **Multi-engine support.** slipstream (QUIC-based, Rust) and dnstt (UDP/DoH/DoT, Go) — pick per tunnel.
+- **Multi-engine support.** vaydns, slipstream, and dnstt — pick per tunnel.
 - **Client-side load balancing.** Kernel-level traffic distribution across tunnel instances via nftables. DNS resolver distribution via DNSdist. Both are independent, both are optional.
 - **Server-side load balancing.** DNSdist in front of tunnel instances — multi-instance per domain, multi-domain on the same server, zone-based query routing.
 - **Health checking.** Per-tunnel, systemd timer-driven. Automatic failover to a backup tunnel on failure, automatic recovery when the tunnel comes back.
@@ -88,5 +88,6 @@ Contributions welcome! Please open an issue or pull request.
 ## Credits
 
 Built on top of:
+- [vaydns](https://github.com/net2share/vaydns)
 - [dnstt](https://www.bamsoftware.com/software/dnstt/) by David Fifield
 - [slipstream-rust](https://github.com/Mygod/slipstream-rust)
