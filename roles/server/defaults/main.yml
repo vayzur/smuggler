@@ -6,8 +6,9 @@ dnstt_server_binary_url: "https://github.com/net2share/dnstt/releases/download/l
 dnstt_pubkey: "dnstt.pub"
 dnstt_privkey: "dnstt.key"
 
-dnstt_GOGC: "10"
-dnstt_GOMEMLIMIT: "512MiB"
+vaydns_server_binary_url: "https://github.com/net2share/vaydns/releases/download/v0.1.0/vaydns-server-linux-amd64"
+vaydns_pubkey: "vaydns.pub"
+vaydns_privkey: "vaydns.key"
 
 slipstream_server_binary_url: "https://github.com/net2share/slipstream-rust-build/releases/download/v2026.02.22.1/slipstream-server-linux-amd64"
 slipstream_pubkey: "slipstream.pub"

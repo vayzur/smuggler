@@ -1,0 +1,16 @@
+---
+- name: Download vaydns-client binary
+  get_url:
+    url: "{{ vaydns_client_binary_url }}"
+    dest: /usr/local/bin/vaydns-client
+    mode: 0755
+  tags:
+    - vaydns-client-binary
+
+- name: Copy vaydns public key
+  copy:
+    src: "{{ controller_keys_path }}/{{ vaydns_pubkey }}"
+    dest: "{{ keys_path }}/{{ vaydns_pubkey }}"
+    mode: 0644
+  tags:
+    - vaydns-keys

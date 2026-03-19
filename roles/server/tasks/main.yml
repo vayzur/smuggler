@@ -21,6 +21,11 @@
   tags:
     - slipstream-server
 
+- import_tasks: vaydns.yml
+  when: smuggler_engines | intersect(['vaydns']) | length > 0
+  tags:
+    - vaydns-server
+
 - name: Deploy killer services
   template:
     src: killer-smuggler@.service.j2

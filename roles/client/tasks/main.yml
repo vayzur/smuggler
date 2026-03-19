@@ -9,6 +9,11 @@
   tags:
     - slipstream-client
 
+- import_tasks: vaydns.yml
+  when: smuggler_engines | intersect(['vaydns']) | length > 0
+  tags:
+    - vaydns-client
+
 - name: Check if any tunnel has health check enabled
   set_fact:
     health_check_needed: "{{ smuggler_tunnels | selectattr('client.health_check.enabled', 'defined') | selectattr('client.health_check.enabled') | list | length > 0 }}"

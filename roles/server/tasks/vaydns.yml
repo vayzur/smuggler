@@ -1,0 +1,56 @@
+---
+- name: Download vaydns-server binary
+  get_url:
+    url: "{{ vaydns_server_binary_url }}"
+    dest: /usr/local/bin/vaydns-server
+    mode: 0755
+  tags:
+    - vaydns-server-binary
+
+- name: Check vaydns keys on controller
+  stat:
+    path: "{{ controller_keys_path }}/{{ vaydns_privkey }}"
+  register: vaydns_keys
+  delegate_to: localhost
+  become: false
+  tags:
+    - vaydns-keys
+
+- name: Generate vaydns keys
+  shell: |
+    vaydns-server -gen-key -privkey-file {{ keys_path }}/{{ vaydns_privkey }} -pubkey-file {{ keys_path }}/{{ vaydns_pubkey }}
+  when:
+    - not vaydns_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'vaydns') | map(attribute='server_node') | list | first == inventory_hostname
+  tags:
+    - vaydns-keys
+
+- name: Fetch vaydns keys to localhost
+  fetch:
+    src: "{{ item }}"
+    dest: "{{ controller_keys_path }}/{{ item | basename }}"
+    flat: true
+  loop:
+    - "{{ keys_path }}/{{ vaydns_privkey }}"
+    - "{{ keys_path }}/{{ vaydns_pubkey }}"
+  when:
+    - not vaydns_keys.stat.exists
+    - tunnels | selectattr('engine', 'equalto', 'vaydns') | map(attribute='server_node') | list | first == inventory_hostname
+  tags:
+    - vaydns-keys
+
+- name: Copy vaydns privkey
+  copy:
+    src: "{{ controller_keys_path }}/{{ vaydns_privkey }}"
+    dest: "{{ keys_path }}/{{ vaydns_privkey }}"
+    mode: 0600
+  tags:
+    - vaydns-keys
+
+- name: Copy vaydns pubkey
+  copy:
+    src: "{{ controller_keys_path }}/{{ vaydns_pubkey }}"
+    dest: "{{ keys_path }}/{{ vaydns_pubkey }}"
+    mode: 0644
+  tags:
+    - vaydns-keys
