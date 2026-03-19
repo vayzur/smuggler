@@ -1,9 +1,6 @@
 ---
 xray: false
 
-xray_version: 26.2.6
+xray_archive_url: "https://github.com/XTLS/Xray-core/releases/download/v26.2.6/Xray-linux-64.zip"
 
 xray_dir: "/opt/xray"
-
-xray_GOMEMLIMIT: "512MiB"
-xray_GOGC: "10"

@@ -14,20 +14,20 @@
 
 - name: Download Xray binary package
   get_url:
-    url: "https://github.com/XTLS/Xray-core/releases/download/v{{ xray_version }}/Xray-linux-64.zip"
-    dest: "/tmp/Xray-linux-64.zip"
+    url: "{{ xray_archive_url }}"
+    dest: "/tmp/xray.zip"
     mode: 0644
 
 - name: Extract Xray binary
   unarchive:
-    src: "/tmp/Xray-linux-64.zip"
+    src: "/tmp/xray.zip"
     dest: "{{ xray_dir }}"
     remote_src: true
   changed_when: true
 
 - name: Clean up Xray archive
   file:
-    path: "/tmp/Xray-linux-64.zip"
+    path: "/tmp/xray.zip"
     state: absent
 
 - name: Deploy Xray configuration
