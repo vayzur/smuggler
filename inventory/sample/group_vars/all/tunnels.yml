@@ -24,6 +24,11 @@ tunnels:
       log_level: warn
       udp_workers: 200
       udp_timeout: 200ms
+      open_stream_timeout: 10s
+      reconnect_max: 30s
+      reconnect_min: 1s
+      session_check_interval: 500ms
+      udp_shared_socket: false
       udp_accept_errors: false
       idle_timeout: 10s
       keepalive: 2s
@@ -71,6 +76,11 @@ tunnels:
       log_level: warn
       udp_workers: 200
       udp_timeout: 200ms
+      open_stream_timeout: 10s
+      reconnect_max: 30s
+      reconnect_min: 1s
+      session_check_interval: 500ms
+      udp_shared_socket: false
       udp_accept_errors: false
       idle_timeout: 10s
       keepalive: 2s
