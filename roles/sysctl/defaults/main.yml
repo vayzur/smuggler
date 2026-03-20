@@ -16,9 +16,10 @@ sysctl_config:
   net.ipv4.tcp_sack: 1
   net.ipv4.tcp_fastopen: 3
   net.ipv4.tcp_rfc1337: 1
+  net.ipv4.tcp_retries2: 15
   net.ipv4.tcp_keepalive_time: 60
-  net.ipv4.tcp_keepalive_intvl: 20
-  net.ipv4.tcp_keepalive_probes: 3
+  net.ipv4.tcp_keepalive_intvl: 10
+  net.ipv4.tcp_keepalive_probes: 6
   net.ipv4.tcp_slow_start_after_idle: 0
   net.ipv4.tcp_fin_timeout: 1
   net.ipv4.tcp_autocorking: 0
