@@ -1,35 +1,34 @@
 # Getting Started
 
+Smuggler is easiest to adopt in two steps: define your hosts, then define your tunnels. The sample inventory under `inventory/sample/` shows the shape of a production deployment with multiple engines, load balancing, health checks, and proxying.
+
 ## Requirements
 
-**Control machine (where you run Ansible):**
-- Ansible >= 2.10
-- SSH client
+| Machine | Requirements |
+|---------|--------------|
+| Control machine | Ansible >= 2.10, SSH client |
+| Target nodes | Linux, Python 3, SSH access with sudo |
 
-**Target nodes (client and server):**
-- Debian or RedHat-based Linux
-- Python 3
-- SSH access with sudo privileges
+## Inventory Layout
 
----
-
-## Installation
-
-```bash
-git clone https://github.com/vayzur/smuggler.git
-cd smuggler
-```
-
----
+| File | Purpose |
+|------|---------|
+| `inventory/hosts.yml` | SSH hosts and the `client_nodes` / `server_nodes` groups |
+| `inventory/group_vars/all/tunnels.yml` | Tunnel definitions |
+| `inventory/group_vars/client_nodes/*.yml` | Client-side extras like traffic LB and local DNSdist |
+| `inventory/group_vars/server_nodes/*.yml` | Server-side extras like DNSdist, SSH proxies, and Xray |
 
 ## Minimal Setup
 
-### 1. Define your hosts
-
-`inventory/hosts.yml`:
+1. Define your hosts in `inventory/hosts.yml`.
 
 ```yaml
 all:
+  vars:
+    ansible_port: 22
+    ansible_user: root
+    ansible_python_interpreter: /usr/bin/python3
+
   hosts:
     server1:
       ansible_host: 203.0.113.10
@@ -44,9 +43,7 @@ all:
         client1:
 ```
 
-### 2. Define your tunnels
-
-`inventory/group_vars/all/tunnels.yml`:
+2. Define a tunnel in `inventory/group_vars/all/tunnels.yml`.
 
 ```yaml
 tunnels:
@@ -57,46 +54,47 @@ tunnels:
     domain: t.example.com
 ```
 
-### 3. Configure DNS
-
-Before deploying, add these DNS records for your domain:
-
-```
-t.example.com.     NS    ns.example.com.
-ns.example.com.    A     <server_public_ip>
-```
-
-See [dns-setup.md](dns-setup.md) for details.
-
-### 4. Deploy
+3. Deploy.
 
 ```bash
 ansible-playbook -i inventory/hosts.yml smuggler.yml
 ```
 
-That's it. Smuggler will:
-- Download and install the engine binaries
-- Generate and distribute keys
-- Create and start systemd services
-- Configure the tunnel on both client and server
+Smuggler installs the chosen engine, generates keys, writes `systemd` units, and starts the services.
 
----
+## Production Starting Point
 
-## Verify it's working
+If you want a fuller example, use `inventory/sample/` as a reference. It shows:
 
-On the client node, test the tunnel as an HTTP proxy:
+- multiple tunnels
+- mixed engines
+- client health checks
+- client-side traffic LB
+- client-side DNSdist
+- server-side DNSdist
+- server-side proxying
+
+## Verify
+
+Check the tunnel service on the client node:
+
+```bash
+systemctl status smuggler@tun0
+```
+
+If the tunnel exposes a local proxy, test it:
 
 ```bash
 curl -x http://127.0.0.1:5201 http://www.google.com/gen_204
 ```
 
-A `204` response means the tunnel is up.
+Replace `5201` with the tunnel's `client.bind_port` if you are not using the default slipstream port.
 
----
+## Next Steps
 
-## Next steps
-
-- Add health checking → [health-check.md](health-check.md)
-- Load balance across multiple tunnels → [load-balancing.md](load-balancing.md)
-- Use an SSH proxy on the server → [proxy.md](proxy.md)
-- Full configuration reference → [configuration.md](configuration.md)
+- Use the DNS delegation flow: [DNS Setup](dns-setup.md)
+- Review the configuration model and defaults: [Configuration Reference](configuration.md)
+- Turn on failover or resolver sharding: [Load Balancing](load-balancing.md)
+- Add a health checker: [Health Checking](health-check.md)
+- Expose traffic through SSH or Xray: [SSH Proxies](proxy.md)
+- Learn the service names and update flow: [Operations](operations.md)

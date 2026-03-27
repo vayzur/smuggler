@@ -1,25 +1,16 @@
 # Health Checking
 
-Each tunnel can have an independent health checker that tests connectivity through the tunnel and triggers failover when it fails.
+Smuggler can run a per-tunnel health checker as a `systemd` timer plus a oneshot service. The checker probes the tunnel through its local proxy and reacts if the probe fails.
 
-**Disabled by default.** You must explicitly enable it per tunnel.
+## What it does
 
----
+1. Runs `curl` through the tunnel proxy.
+2. Retries the probe if requested.
+3. If the probe fails, restarts the tunnel service.
+4. If `client.lb.enabled` is set, it also switches the LB backend to the backup address and port.
+5. If the probe succeeds again, the LB backend moves back to the primary.
 
-## How it works
-
-The health checker runs as a systemd timer + oneshot service pair. On each interval it:
-
-1. Makes an HTTP(S) request through the tunnel proxy
-2. If the request fails (timeout or error), marks the tunnel as unhealthy
-3. If `client.lb.enabled` is true, swaps traffic to the backup address
-4. On recovery, swaps back to the main tunnel
-
-The checker fires on a timer (`OnUnitActiveSec`) starting after a boot delay (`OnBootSec`). This gives the tunnel time to establish before the first check.
-
----
-
-## Enabling health check
+## Example
 
 ```yaml
 tunnels:
@@ -31,86 +22,49 @@ tunnels:
     client:
       bind_addr: 127.0.0.1
       bind_port: 5200
+      lb:
+        enabled: true
+        backup_addr: 127.0.0.1
+        backup_port: 5202
       health_check:
         enabled: true
-        interval: "3s"
+        interval: "5s"
         boot_delay: "10s"
-        proxy_type: http
+        proxy_type: socks5h
         proxy_addr: 127.0.0.1
         proxy_port: 5200
         test_url: "http://www.google.com/gen_204"
-        timeout: 5
+        timeout: 7
+        retries: 2
 ```
 
-The `proxy_addr` and `proxy_port` should point at the tunnel's local listener (same as `client.bind_addr` / `client.bind_port`). The health checker uses this as the proxy to reach `test_url`.
+## Defaults
 
----
+| Key | Default |
+|-----|---------|
+| `health_check.enabled` | `false` |
+| `health_check.interval` | `10s` |
+| `health_check.boot_delay` | `10s` |
+| `health_check.proxy_type` | `socks5h` |
+| `health_check.proxy_addr` | `127.0.0.1` |
+| `health_check.proxy_port` | `client.bind_port` |
+| `health_check.test_url` | `http://www.google.com/gen_204` |
+| `health_check.timeout` | `7` |
+| `health_check.retries` | `2` |
 
-## Health check + failover
+`proxy_user` and `proxy_pass` are optional. If present, they are embedded into the proxy URL passed to `curl`.
 
-To use health checking with automatic failover, enable `client.lb` on the tunnel:
+## Services
 
-```yaml
-client:
-  bind_addr: 127.0.0.1
-  bind_port: 5200
-  lb:
-    enabled: true
-    backup_addr: 127.0.0.1
-    backup_port: 5202      # a backup tunnel listening here
-  health_check:
-    enabled: true
-    proxy_type: http
-    proxy_addr: 127.0.0.1
-    proxy_port: 5200
-    test_url: "http://www.google.com/gen_204"
-    timeout: 5
-```
+For each enabled tunnel, Smuggler creates:
 
-When the tunnel at `5200` fails, traffic is redirected to `5202` until it recovers. The backup is a separate tunnel instance — it must be running and healthy independently.
+| Unit | Purpose |
+|------|---------|
+| `health-smuggler@<name>.service` | Runs the probe once |
+| `health-smuggler@<name>.timer` | Repeats the probe on the configured interval |
 
----
+## Notes
 
-## All options
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| `health_check.enabled` | `false` | Must be `true` to activate |
-| `health_check.interval` | `3s` | How often to run the check |
-| `health_check.boot_delay` | `10s` | Wait after boot before first check |
-| `health_check.proxy_type` | *(required)* | Proxy protocol: `http` or `socks5` |
-| `health_check.proxy_addr` | `127.0.0.1` | Address of the tunnel's proxy listener |
-| `health_check.proxy_port` | `client.bind_port` | Port of the tunnel's proxy listener |
-| `health_check.test_url` | `http://www.google.com/gen_204` | URL to test through the proxy |
-| `health_check.timeout` | `3` | Seconds before the test is considered failed |
-
----
-
-## Systemd services
-
-For each tunnel with health checking enabled, Smuggler creates:
-
-- `health-smuggler@<name>.timer` — fires the check on the configured interval
-- `health-smuggler@<name>.service` — oneshot service that runs the health script
-
-The timer starts after `boot_delay` and repeats every `interval`. Both are managed by Ansible and tied to the tunnel's lifecycle.
-
----
-
-## Example: aggressive health checking
-
-For a high-availability setup where fast failover matters:
-
-```yaml
-health_check:
-  enabled: true
-  interval: "2s"
-  boot_delay: "5s"
-  proxy_type: http
-  proxy_addr: 127.0.0.1
-  proxy_port: 5200
-  test_url: "http://www.google.com/gen_204"
-  timeout: 2
-```
-
-This checks every 2 seconds and times out in 2 seconds, so you get failover within ~4 seconds of a tunnel going down.
+- Health checking is client-side only.
+- If LB is disabled, a failed probe still restarts the tunnel service.
+- The checker uses the tunnel's local listener, so the proxy port should match the tunnel service's `client.bind_port`.

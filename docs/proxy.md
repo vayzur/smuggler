@@ -1,29 +1,17 @@
 # SSH Proxies
 
-Smuggler can create SSH SOCKS proxy services on server nodes. These give tunnel clients a proxy endpoint without configuring any external proxy software.
+Smuggler can expose tunnel egress through either SSH SOCKS proxies or Xray. Both are server-side features and both are disabled by default.
 
-**Disabled by default.**
+## SSH SOCKS Proxies
 
----
+When `ssh_proxy: true`, Smuggler creates a `systemd` service for every `server.proxy` entry. Each service runs `ssh -D` and listens on the tunnel's `server.target_addr:server.target_port`.
 
-## How it works
-
-When you define proxies under `server.proxy`, Smuggler creates a systemd service per proxy entry that runs an SSH `-D` (dynamic SOCKS) forward. The tunnel's `target_addr:target_port` points at this SOCKS listener, so traffic flowing through the tunnel exits via SSH.
-
----
-
-## Enabling
-
-In `inventory/group_vars/server_nodes/proxy.yml`:
+### Example
 
 ```yaml
 ssh_proxy: true
-ssh_privkey: "smuggler_ed25519"    # key file in ~/.ssh/ on the server node
-```
+ssh_privkey: smuggler_ed25519
 
-Then in your tunnel definition:
-
-```yaml
 tunnels:
   - name: tun0
     client_node: lb0
@@ -35,59 +23,62 @@ tunnels:
       target_port: 2052
       proxy:
         - name: p1
-          remote_host: 127.0.0.1  # SSH server to connect to
-          remote_port: 22          # SSH port
+          remote_host: 127.0.0.1
+          remote_port: 22
 ```
 
-The proxy creates a SOCKS5 listener on `target_addr:target_port`. The tunnel forwards traffic to it, and SSH forwards it onward.
-
----
-
-## Multiple proxies
-
-You can define multiple proxy entries. Each becomes its own systemd service:
-
-```yaml
-server:
-  proxy:
-    - name: p1
-      remote_host: 127.0.0.1
-      remote_port: 22
-    - name: p2
-      remote_host: 10.0.0.5
-      remote_port: 2222
-```
-
----
-
-## SSH connection parameters
-
-These are baked into the service and not configurable via DSL (they're hardcoded to safe defaults):
-
-| Parameter | Value |
-|-----------|-------|
-| `ServerAliveInterval` | 3s |
-| `ServerAliveCountMax` | 3 |
-| `ExitOnForwardFailure` | yes |
-| `ConnectTimeout` | 10s |
-| `StrictHostKeyChecking` | no |
-| `NoHostAuthenticationForLocalhost` | yes |
-
-The private key is read from `~/.ssh/<ssh_privkey>` on the server node. The default key name is `smuggler_ed25519`.
-
----
-
-## Defaults
+### Defaults
 
 | Key | Default |
 |-----|---------|
 | `ssh_proxy` | `false` |
 | `ssh_privkey` | `smuggler_ed25519` |
 | `proxy[].remote_host` | `127.0.0.1` |
-| `proxy[].remote_port` | `ansible_port` (the SSH port Ansible uses to connect) |
+| `proxy[].remote_port` | `ansible_port` |
 
----
+### SSH options
 
-## Consistency requirement with traffic LB
+These SSH flags are baked into the generated service:
 
-When traffic load balancing is active across multiple server nodes, all servers **must** use the same proxy type. Mixing SSH proxy on one server and a different proxy (e.g. Xray) on another will break load balancing — the tunnel backends become inconsistent from the client's perspective.
+| Option | Value |
+|--------|-------|
+| `ServerAliveInterval` | `3` |
+| `ServerAliveCountMax` | `3` |
+| `ExitOnForwardFailure` | `yes` |
+| `ConnectTimeout` | `10` |
+| `StrictHostKeyChecking` | `no` |
+| `NoHostAuthenticationForLocalhost` | `yes` |
+
+## Xray
+
+When `xray: true`, Smuggler installs Xray and runs it as a systemd service. The bundled default config exposes a SOCKS inbound on `127.0.0.1:1081`.
+
+### Example
+
+```yaml
+xray: true
+
+tunnels:
+  - name: t10
+    client_node: lb0
+    server_node: node0
+    engine: dnstt
+    domain: t4.example.com
+    server:
+      target_addr: 127.0.0.1
+      target_port: 1081
+```
+
+### Defaults
+
+| Key | Default |
+|-----|---------|
+| `xray` | `false` |
+| `xray_dir` | `/opt/xray` |
+| `xray_archive_url` | `v26.2.6` release URL |
+
+To customize Xray, place a host-specific JSON file in `roles/xray/files/` or edit `roles/xray/files/default.json`.
+
+## LB Consistency
+
+If you use traffic load balancing across multiple server nodes, keep the proxy type consistent across those nodes. Mixing SSH proxy on one node and Xray on another will break backend symmetry.

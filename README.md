@@ -57,19 +57,23 @@ Smuggler handles the rest with defaults.
 
 ## Features
 
-- **Multi-engine support.** vaydns, slipstream, and dnstt — pick per tunnel.
-- **Client-side load balancing.** Kernel-level traffic distribution across tunnel instances via nftables. DNS resolver distribution via DNSdist. Both are independent, both are optional.
-- **Server-side load balancing.** DNSdist in front of tunnel instances — multi-instance per domain, multi-domain on the same server, zone-based query routing.
-- **Health checking.** Per-tunnel, systemd timer-driven. Automatic failover to a backup tunnel on failure, automatic recovery when the tunnel comes back.
-- **SSH SOCKS proxies.** Server-side, managed by Ansible. No external proxy configuration needed.
-- **Declarative config.** One YAML file defines your entire infrastructure. Sane defaults everywhere — override only what you need.
-- **Systemd-native.** Every tunnel, proxy, and health checker runs as an independent managed service.
+| Capability | What you get |
+|-----------|--------------|
+| Multi-engine support | `vaydns`, `slipstream`, and `dnstt` in one inventory |
+| Defaults-first config | Minimal tunnel definitions work out of the box |
+| Systemd-native services | Per-tunnel units, timers, and restarts managed by Ansible |
+| Health checking | Timer-driven probes with automatic failover and recovery |
+| Client-side balancing | nftables traffic distribution plus optional client DNSdist |
+| Server-side balancing | DNSdist pools by domain and distributes queries across instances |
+| Proxy egress | SSH SOCKS proxies or Xray on server nodes |
+| Operational hygiene | Key generation, binary installation, and sysctl tuning |
 
 ## Requirements
 
-**Control machine:** Ansible >= 2.10, SSH client
-
-**Target nodes:** Debian/RedHat-based Linux, Python 3, SSH access with sudo
+| Machine | Requirements |
+|---------|--------------|
+| Control machine | Ansible >= 2.10, SSH client |
+| Target nodes | Debian/RedHat-based Linux, Python 3, SSH access with sudo |
 
 ## Documentation
 

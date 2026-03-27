@@ -1,190 +1,137 @@
 # Configuration Reference
 
-All tunnels are defined in `inventory/group_vars/all/tunnels.yml`. The file name doesn't matter but the location does.
+All tunnel definitions live in `tunnels:`. Smuggler is built around defaults, so most deployments only need host mapping and a handful of tunnel fields.
 
-Role-level defaults can be overridden per group:
+## Inventory Layout
 
-| Scope | Path |
-|-------|------|
-| All nodes | `inventory/group_vars/all/` |
-| Client nodes only | `inventory/group_vars/client_nodes/` |
-| Server nodes only | `inventory/group_vars/server_nodes/` |
+| File | Purpose |
+|------|---------|
+| `inventory/hosts.yml` | SSH hosts and `client_nodes` / `server_nodes` groups |
+| `inventory/group_vars/all/tunnels.yml` | Tunnel list |
+| `inventory/group_vars/client_nodes/*.yml` | Client-side LB and client DNSdist |
+| `inventory/group_vars/server_nodes/*.yml` | Server-side DNSdist, proxies, and Xray |
 
----
+## Required Tunnel Keys
 
-## Tunnel Definition
+| Key | Required | Notes |
+|-----|----------|-------|
+| `name` | yes | Service name suffix |
+| `client_node` | yes | Must match a host in `client_nodes` |
+| `server_node` | yes | Must match a host in `server_nodes` |
+| `engine` | yes | `vaydns`, `slipstream`, or `dnstt` |
+| `domain` | yes | Delegated tunnel domain |
 
-Each tunnel is an entry in the `tunnels` list.
+## Top-Level Feature Flags
 
-### Minimal
+| Key | Default | Scope |
+|-----|---------|-------|
+| `load_balancing` | `false` | Client traffic LB via nftables |
+| `dnsdist` | `false` | Client or server DNSdist, depending on group vars |
+| `ssh_proxy` | `false` | Server-side SSH SOCKS proxies |
+| `xray` | `false` | Server-side Xray install and service |
 
-```yaml
-tunnels:
-  - name: tun0
-    client_node: client1
-    server_node: server1
-    engine: slipstream
-    domain: t.example.com
-```
+## Base Tunnel Defaults
 
-Smuggler fills in all other values from defaults.
+| Key | Default | Notes |
+|-----|---------|-------|
+| `client.bind_addr` | `0.0.0.0` | Local listener address |
+| `client.lb.enabled` | `false` | Enables backup backend swapping |
+| `client.lb.backup_addr` | `127.0.0.1` | Backup address for health failover |
+| `client.lb.backup_port` | `client.bind_port` | Backup port for health failover |
+| `client.health_check.enabled` | `false` | Timer-driven health checks |
+| `client.health_check.interval` | `10s` | Timer period |
+| `client.health_check.boot_delay` | `10s` | Wait before first run |
+| `client.health_check.proxy_type` | `socks5h` | Passed to `curl -x` |
+| `client.health_check.proxy_addr` | `127.0.0.1` | Tunnel listener address |
+| `client.health_check.proxy_port` | `client.bind_port` | Tunnel listener port |
+| `client.health_check.test_url` | `http://www.google.com/gen_204` | Probe target |
+| `client.health_check.timeout` | `7` | Seconds before probe fails |
+| `client.health_check.retries` | `2` | Probe attempts before failover |
+| `server.bind_addr` | `ansible_default_ipv4.address` | Server listener address |
+| `server.bind_port` | `53` | Server listener port |
+| `server.target_addr` | `127.0.0.1` | Egress target address |
+| `server.killer.enabled` | `false` | Optional restart timer |
+| `server.killer.interval` | `30min` | Restart cadence |
+| `server.killer.boot_delay` | `1min` | Wait before first restart |
 
-### Full Reference
+## Engine Defaults
 
-```yaml
-tunnels:
-  - name: tun0                   # unique name, used for service names
-    client_node: client1         # must match a host in inventory
-    server_node: server1         # must match a host in inventory
-    engine: slipstream           # slipstream | dnstt
-    domain: t.example.com        # DNS domain for this tunnel
+### Slipstream
 
-    client:
-      bind_addr: 0.0.0.0         # address to listen on
-      bind_port: 5201            # port to listen on
-      dns_protocol: udp          # udp | doh | dot  (dnstt only)
-      dns_resolver: "8.8.8.8:53" # single string, or list (slipstream only)
-      keep_alive_interval: 200   # ms  (slipstream only)
-      extra_cmdline: ""          # appended verbatim to the start command
+| Key | Default | Notes |
+|-----|---------|-------|
+| `client.bind_port` | `5201` | Local listener |
+| `client.dns_resolver` | `8.8.8.8:53` | String or list |
+| `client.keep_alive_interval` | `200` | Milliseconds |
+| `server.target_port` | `5201` | Upstream target |
+| `server.max_connections` | `512` | Server-side cap |
+| `server.idle_timeout_seconds` | `60` | Server idle timeout |
 
-      lb:
-        enabled: false
-        backup_addr: 127.0.0.1
-        backup_port: 5202
+### Dnstt
 
-      health_check:
-        enabled: false
-        interval: "3s"
-        boot_delay: "10s"
-        proxy_type: http         # proxy protocol to test through
-        proxy_addr: 127.0.0.1
-        proxy_port: 5201
-        test_url: "http://www.google.com/gen_204"
-        timeout: 3               # seconds
+| Key | Default | Notes |
+|-----|---------|-------|
+| `client.bind_port` | `7000` | Local listener |
+| `client.dns_protocol` | `udp` | Passed to the client binary |
+| `client.dns_resolver` | `8.8.8.8:53` | Single resolver string |
+| `server.target_port` | `8000` | Upstream target |
+| `server.mtu` | `1232` | Tunnel MTU |
 
-    server:
-      bind_addr: "{{ ansible_default_ipv4.address }}"
-      bind_port: 53
-      target_addr: 127.0.0.1    # where tunnel forwards traffic
-      target_port: 5201
-      mtu: 1232                  # dnstt only
-      max_connections: 512       # slipstream only
-      idle_timeout_seconds: 3    # slipstream only
-      extra_cmdline: ""          # appended verbatim to the start command
+### Vaydns
 
-      proxy:                     # SSH SOCKS proxies (see proxy.md)
-        - name: p1
-          remote_host: 127.0.0.1
-          remote_port: 22
-```
+| Key | Default | Notes |
+|-----|---------|-------|
+| `client.bind_port` | `2584` | Local listener |
+| `client.udp_timeout` | `500ms` | Client-side UDP timeout |
+| `client.idle_timeout` | `10s` | Client idle timeout |
+| `client.keepalive` | `2s` | Client keepalive interval |
+| `client.open_stream_timeout` | `10s` | Open stream timeout |
+| `client.reconnect_max` | `30s` | Reconnect ceiling |
+| `client.reconnect_min` | `1s` | Reconnect floor |
+| `client.session_check_interval` | `500ms` | Session check cadence |
+| `client.udp_workers` | `100` | Worker count |
+| `client.rps` | `0` | Request rate limiter |
+| `client.max_streams` | `0` | Stream cap |
+| `client.max_qname_len` | `0` | QNAME length cap |
+| `client.max_num_labels` | `2` | Label count cap |
+| `client.client_id_size` | `2` | Client ID size |
+| `client.dns_record_type` | `txt` | DNS record type |
+| `client.dns_resolver` | `8.8.8.8:53` | Resolver string |
+| `server.target_port` | `2584` | Upstream target |
+| `server.client_id_size` | `2` | Server-side client ID size |
+| `server.dns_record_type` | `txt` | Server-side DNS record type |
+| `server.log_level` | `warn` | Vaydns server log level |
+| `server.idle_timeout` | `10s` | Server idle timeout |
+| `server.keepalive` | `2s` | Server keepalive |
+| `server.mtu` | `1232` | Tunnel MTU |
 
----
-
-## Engine Differences
-
-Some fields are engine-specific and silently ignored if you set them on the wrong engine.
-
-| Field | slipstream | dnstt |
-|-------|-----------|-------|
-| `client.dns_resolver` | string or list | string only |
-| `client.keep_alive_interval` | ✓ | — |
-| `client.dns_protocol` | — | ✓ (udp/doh/dot) |
-| `server.max_connections` | ✓ | — |
-| `server.idle_timeout_seconds` | ✓ | — |
-| `server.mtu` | — | ✓ |
-
----
-
-## Client Defaults
-
-| Field | Default |
-|-------|---------|
-| `client.bind_addr` | `0.0.0.0` (dnstt), not used same way for slipstream |
-| `client.bind_port` | `7000` (dnstt) / `5201` (slipstream) |
-| `client.dns_resolver` | `8.8.8.8:53` |
-| `client.dns_protocol` | `udp` |
-| `client.keep_alive_interval` | `200` |
-| `client.lb.enabled` | `false` |
-| `client.lb.backup_addr` | `127.0.0.1` |
-| `client.health_check.enabled` | `false` |
-| `client.health_check.interval` | `3s` |
-| `client.health_check.boot_delay` | `10s` |
-| `client.health_check.proxy_addr` | `127.0.0.1` |
-| `client.health_check.proxy_port` | `client.bind_port` |
-| `client.health_check.test_url` | `http://www.google.com/gen_204` |
-| `client.health_check.timeout` | `3` |
-
-## Server Defaults
-
-| Field | Default |
-|-------|---------|
-| `server.bind_addr` | `ansible_default_ipv4.address` |
-| `server.bind_port` | `53` |
-| `server.target_addr` | `127.0.0.1` |
-| `server.target_port` | `5201` (slipstream) / `7000` (dnstt) |
-| `server.mtu` | `1232` (dnstt) |
-| `server.max_connections` | `512` (slipstream) |
-| `server.idle_timeout_seconds` | `3` (slipstream) |
-
----
-
-## Binary and Key Defaults
-
-These live in role defaults and can be overridden in group_vars.
-
-### Client role
+## Role Defaults
 
 | Key | Default |
 |-----|---------|
-| `keys_path` | `/opt` |
 | `controller_keys_path` | `~/.smuggler` |
-| `dnstt_client_binary_url` | GitHub releases |
-| `slipstream_client_binary_url` | GitHub releases |
+| `keys_path` | `/opt` |
+| `dnstt_client_binary_url` | Latest dnstt client release |
+| `dnstt_server_binary_url` | Latest dnstt server release |
+| `vaydns_client_binary_url` | `v0.2.4` release URL |
+| `vaydns_server_binary_url` | `v0.2.4` release URL |
+| `slipstream_client_binary_url` | `v2026.02.22.1` release URL |
+| `slipstream_server_binary_url` | `v2026.02.22.1` release URL |
 | `dnstt_pubkey` | `dnstt.pub` |
 | `dnstt_privkey` | `dnstt.key` |
-| `dnstt_GOGC` | `10` |
-| `dnstt_GOMEMLIMIT` | `512MiB` |
-
-### Server role
-
-| Key | Default |
-|-----|---------|
-| `keys_path` | `/opt` |
-| `controller_keys_path` | `~/.smuggler` |
-| `dnstt_server_binary_url` | GitHub releases |
-| `slipstream_server_binary_url` | GitHub releases |
-| `dnstt_pubkey` | `dnstt.pub` |
-| `dnstt_privkey` | `dnstt.key` |
+| `vaydns_pubkey` | `vaydns.pub` |
+| `vaydns_privkey` | `vaydns.key` |
 | `slipstream_pubkey` | `slipstream.pub` |
 | `slipstream_privkey` | `slipstream.key` |
-| `dnstt_GOGC` | `10` |
-| `dnstt_GOMEMLIMIT` | `512MiB` |
+| `ssh_proxy` | `false` |
+| `ssh_privkey` | `smuggler_ed25519` |
+| `xray` | `false` |
+| `xray_archive_url` | `v26.2.6` release URL |
+| `xray_dir` | `/opt/xray` |
 
-`GOGC` and `GOMEMLIMIT` are Go runtime environment variables injected into the systemd service for dnstt. They control garbage collection aggressiveness and memory limit respectively.
+## Notes
 
----
-
-## Multiple Tunnels on the Same Domain
-
-You can run multiple tunnels with the same domain. On the server side, DNSdist pools them together and load balances queries across all instances for that domain. See [load-balancing.md](load-balancing.md) for setup.
-
-## Multiple Tunnels, Different Domains
-
-Each domain routes to its own pool. You can mix engines:
-
-```yaml
-tunnels:
-  - name: t0
-    engine: slipstream
-    domain: s.example.com
-    ...
-  - name: t1
-    engine: dnstt
-    domain: d.example.com
-    ...
-```
-
-## Limitations
-
-- Smuggler has no delete/teardown tasks. To remove a tunnel, stop and delete its systemd service on the target node manually.
-- All changes require re-running the playbook to take effect.
+- `slipstream` accepts a string or list in `client.dns_resolver`.
+- `dnstt` and `vaydns` use a single resolver string.
+- `server.bind_addr` defaults to the server's primary IPv4 address unless you override it.
+- `load_balancing`, `dnsdist`, `ssh_proxy`, and `xray` are group-level switches. Set them in the matching `client_nodes` or `server_nodes` group vars, not in `all`, unless you want them everywhere.
