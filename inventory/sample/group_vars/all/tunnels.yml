@@ -23,7 +23,7 @@ tunnels:
         test_url: "http://www.google.com/gen_204"
       log_level: warn
       udp_workers: 200
-      udp_timeout: 200ms
+      udp_timeout: 500ms
       open_stream_timeout: 10s
       reconnect_max: 30s
       reconnect_min: 1s
@@ -35,7 +35,9 @@ tunnels:
       max_streams: 0
       max_qname_len: 101
       max_num_labels: 2
-      rps: 500
+      rps: 300
+      client_id_size: 1
+      dns_record_type: txt
       dns_protocol: udp
       dns_resolver: "127.0.0.1:5300"
       bind_addr: 127.0.0.1
@@ -48,9 +50,11 @@ tunnels:
       bind_port: 8200
       target_addr: 127.0.0.1
       target_port: 1081
+      dns_record_type: txt
+      client_id_size: 1
       idle_timeout: 10s
       keepalive: 2s
-      mtu: 493
+      mtu: 1232
 
   - name: t01
     server_node: node0
@@ -75,7 +79,7 @@ tunnels:
         test_url: "http://www.google.com/gen_204"
       log_level: warn
       udp_workers: 200
-      udp_timeout: 200ms
+      udp_timeout: 500ms
       open_stream_timeout: 10s
       reconnect_max: 30s
       reconnect_min: 1s
@@ -87,7 +91,9 @@ tunnels:
       max_streams: 0
       max_qname_len: 101
       max_num_labels: 2
-      rps: 500
+      rps: 300
+      client_id_size: 1
+      dns_record_type: txt
       dns_protocol: udp
       dns_resolver: "127.0.0.1:5300"
       bind_addr: 127.0.0.1
@@ -100,9 +106,11 @@ tunnels:
       bind_port: 8201
       target_addr: 127.0.0.1
       target_port: 1081
+      dns_record_type: txt
+      client_id_size: 1
       idle_timeout: 10s
       keepalive: 2s
-      mtu: 493
+      mtu: 1232
 
   - name: t10
     server_node: node0
