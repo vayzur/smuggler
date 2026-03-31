@@ -14,7 +14,7 @@
 
 - name: Download Xray binary package
   get_url:
-    url: "{{ xray_archive_url }}"
+    url: "{{ xray_url }}"
     dest: "/tmp/xray.zip"
     mode: 0644
 
