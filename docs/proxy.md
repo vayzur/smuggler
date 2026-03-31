@@ -75,7 +75,7 @@ tunnels:
 |-----|---------|
 | `xray` | `false` |
 | `xray_dir` | `/opt/xray` |
-| `xray_archive_url` | `v26.2.6` release URL |
+| `xray_url` | `v26.3.27` release URL |
 
 To customize Xray, place a host-specific JSON file in `roles/xray/files/` or edit `roles/xray/files/default.json`.
 
