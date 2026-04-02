@@ -6,7 +6,7 @@ dnstt_client_binary_url: "https://github.com/net2share/dnstt/releases/download/l
 dnstt_pubkey: "dnstt.pub"
 dnstt_privkey: "dnstt.key"
 
-vaydns_client_binary_url: "https://github.com/net2share/vaydns/releases/download/v0.2.4/vaydns-client-linux-amd64"
+vaydns_client_binary_url: "https://github.com/net2share/vaydns/releases/download/v0.2.7/vaydns-client-linux-amd64"
 vaydns_pubkey: "vaydns.pub"
 vaydns_privkey: "vaydns.key"
 
