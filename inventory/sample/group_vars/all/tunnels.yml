@@ -27,7 +27,6 @@ tunnels:
       open_stream_timeout: 10s
       reconnect_max: 30s
       reconnect_min: 1s
-      session_check_interval: 500ms
       udp_shared_socket: false
       udp_accept_errors: false
       idle_timeout: 10s
@@ -36,6 +35,9 @@ tunnels:
       max_qname_len: 101
       max_num_labels: 2
       rps: 300
+      queue_size: 512
+      kcp_window_size: 256
+      queue_overflow: drop
       client_id_size: 1
       dns_record_type: txt
       dns_protocol: udp
@@ -54,6 +56,9 @@ tunnels:
       client_id_size: 1
       idle_timeout: 10s
       keepalive: 2s
+      queue_size: 512
+      kcp_window_size: 256
+      queue_overflow: drop
       mtu: 1232
 
   - name: t01
@@ -83,7 +88,6 @@ tunnels:
       open_stream_timeout: 10s
       reconnect_max: 30s
       reconnect_min: 1s
-      session_check_interval: 500ms
       udp_shared_socket: false
       udp_accept_errors: false
       idle_timeout: 10s
@@ -92,6 +96,9 @@ tunnels:
       max_qname_len: 101
       max_num_labels: 2
       rps: 300
+      queue_size: 512
+      kcp_window_size: 256
+      queue_overflow: drop
       client_id_size: 1
       dns_record_type: txt
       dns_protocol: udp
@@ -110,6 +117,10 @@ tunnels:
       client_id_size: 1
       idle_timeout: 10s
       keepalive: 2s
+      queue_size: 512
+      kcp_window_size: 256
+      queue_overflow: drop
+      ttl: 0
       mtu: 1232
 
   - name: t10
