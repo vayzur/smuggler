@@ -46,7 +46,7 @@ addAction(AllRule(), PoolAction("default"))
 addAction(AllRule(), DropAction())
 {% endif %}
 
-setLocal("{{ dnsdist_bind_addr | default('0.0.0.0', true) }}:{{ dnsdist_bind_port | default(53, true) }}")
+setLocal("{{ dnsdist_bind_addr | default(ansible_default_ipv4.address, true) }}:{{ dnsdist_bind_port | default(53, true) }}")
 
 setServerPolicy({{ dnsdist_server_policy | default('firstAvailable', true) }})
 
