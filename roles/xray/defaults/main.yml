@@ -1,6 +1,6 @@
 ---
 xray: false
 
-xray_url: "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-64.zip"
+xray_url: "https://github.com/XTLS/Xray-core/releases/download/v26.9.9/Xray-linux-64.zip"
 
 xray_dir: "/opt/xray"
